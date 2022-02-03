@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
+from .views import PlotAPIView
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('plotgraph', PlotAPIView.as_view()),
 ]
