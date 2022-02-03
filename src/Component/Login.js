@@ -17,7 +17,7 @@ async function loginUser(credentials) {
 
 export default function Login({ setToken }) {
 const [username, setUserName] = useState();
-  const [password, setPassword] = useState();
+const [password, setPassword] = useState();
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -25,8 +25,11 @@ const [username, setUserName] = useState();
       username,
       password
     });
+    console.log(token);
     setToken(token);
   }
+
+  console.log("Inside Login Page");
   return(
     <div className="login-wrapper">
         <h1>Weather Prediction</h1>

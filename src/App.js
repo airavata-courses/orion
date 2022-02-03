@@ -3,9 +3,13 @@ import './App.css';
 import HomePage from './Component/HomePage';
 import Login from './Component/Login'
 import useToken from './Component/useToken';
+import GoogleLoginComponent from "./Component/GoogleLoginComponent";
+// import GoogleLogout from "./Component/GoogleLogoutComponent";
+
+
 
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-// import GoogleLogin from 'react-google-login';
+import GoogleLogin from 'react-google-login';
 
 
 function setToken(userToken) {
@@ -20,17 +24,18 @@ function getToken() {
 }
 
 function App() {
-  const { token, setToken } = useToken();
+  // const { token, setToken } = useToken();
 
-  if(!token) {
-    return <Login setToken={setToken} />
-  }
+  // if(!token) {
+  //   return <Login setToken={setToken} />
+  // }
   return (
     <div >
+       <GoogleLoginComponent  />
       <BrowserRouter>
         <Switch>
           <Route path="/login">
-            <Login  />
+            <GoogleLoginComponent  />
           </Route>
           <Route path="/home">
             <HomePage />
@@ -40,5 +45,7 @@ function App() {
     </div>
   );
 }
+ 
+
 
 export default App;
