@@ -1,25 +1,31 @@
 import React, { useState } from 'react';
 
+async function sendData(data) {
+    return fetch('http://localhost:8080/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+      .then(data => data.json())
+   }
+
 
 export default function HomePage(userData){
    
     const [date, setDate] = useState();
     const [time, setTime] = useState();
     const [datacenter, setDataCenter] = useState();
+    const [status, setStatus] = useState(); // 
+
 
     console.log("userdata:"+userData);
 
     const handleSubmit = async e => {
         e.preventDefault();
-        const weather =  {date,time,datacenter,userData};
-        console.log(weather);
-        fetch('http://localhost:8080/login', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(weather)
-    }).then(()=>{
-            console.log(weather)
-    })
+        const response = await sendData({date,time,datacenter,userData});
+        console.log(response.data);
     }
 
         return(
@@ -43,4 +49,4 @@ export default function HomePage(userData){
             </form>
         </div> 
         );
-}
+        }
