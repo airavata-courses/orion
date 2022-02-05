@@ -29,7 +29,6 @@ const [password, setPassword] = useState();
     setToken(token);
   }
 
-  console.log("Inside Login Page");
   return(
     <div className="login-wrapper">
         <h1>Weather Prediction</h1>

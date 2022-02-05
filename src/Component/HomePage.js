@@ -1,26 +1,29 @@
 import React, { useState } from 'react';
 
 
-export default function HomePage(){
+export default function HomePage(userData){
    
     const [date, setDate] = useState();
     const [time, setTime] = useState();
     const [datacenter, setDataCenter] = useState();
 
+    console.log("userdata:"+userData);
+
     const handleSubmit = async e => {
         e.preventDefault();
-        const weather =  {date,time,datacenter};
+        const weather =  {date,time,datacenter,userData};
+        console.log(weather);
         fetch('http://localhost:8080/login', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(weather)
     }).then(()=>{
-            console.log('sent')
+            console.log(weather)
     })
     }
 
         return(
-        <div className="home-wrapper">
+        <div >
             <h1>View Current Atmospheric Conditions</h1>
             <form onSubmit={handleSubmit}>
                 <label>
