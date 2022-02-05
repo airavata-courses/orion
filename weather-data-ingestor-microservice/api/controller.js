@@ -10,9 +10,11 @@ const AWS = require('aws-sdk');
 
 
  var controllers = {
-     getS3url: function(req, res) {
-         const { params } = req;
-         const { year, month, day, hour, radar } = params;
+     postS3url: function(req, res) {
+         const { body } = req;
+         console.log("body=",req.body)
+         const { date, time:hour, datacenter:radar } = body;
+         const [year, day, month] = date.split("-")
 
          BucketConfig.Prefix = `${year}/${month}/${day}/${radar}/`;
 
@@ -31,7 +33,7 @@ const AWS = require('aws-sdk');
                                  const [, hourString] = Key.split("_");
                                  const hr = hourString.substring(0, 2);
                                  if (hr === hour) {
-                                     result.push(Key.split("/")[4])
+                                     result.push(Key)
                                  }
                              })
                      }

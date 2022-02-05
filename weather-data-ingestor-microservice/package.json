@@ -10,7 +10,10 @@
   "author": "anbadrin",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.2",
-    "aws-sdk": "^2.1066.0"
+    "aws-sdk": "^2.1066.0",
+    "express": "^4.17.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }
