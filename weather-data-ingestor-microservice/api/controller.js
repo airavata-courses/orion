@@ -38,6 +38,7 @@ const AWS = require('aws-sdk');
                              })
                      }
                  }
+                 console.log(result)
                  res.json(result.slice(0, 4))
              }
          })
