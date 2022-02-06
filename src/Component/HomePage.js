@@ -17,7 +17,6 @@ export default function HomePage(userData){
     const [date, setDate] = useState();
     const [time, setTime] = useState();
     const [datacenter, setDataCenter] = useState();
-    const [status, setStatus] = useState(); // 
 
 
     console.log("userdata:"+userData);
@@ -27,6 +26,8 @@ export default function HomePage(userData){
         const response = await sendData({date,time,datacenter,userData});
         console.log(response.data);
     }
+
+   
 
         return(
         <div >
