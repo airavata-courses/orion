@@ -20,7 +20,7 @@ export default function HomePage(userData){
     const [date, setDate] = useState();
     const [time, setTime] = useState();
     const [datacenter, setDataCenter] = useState();
-    const {handleChange, values,errors,handleSubmit } = useForm(formSubmit);
+   
     const [response, setResponse] = useState([]);
     var res = []
 
@@ -32,8 +32,7 @@ export default function HomePage(userData){
         console.log(response);                                        
     }
 
-   
-
+    const {handleChange, values,errors,handleSubmit } = useForm(formSubmit);
         return(
         <div >
             <h1>View Current Atmospheric Conditions</h1>
@@ -47,13 +46,13 @@ export default function HomePage(userData){
                 <label>
                     <p><strong>Time</strong></p>
                     {/* <input type="time" id="time" onChange={e => setTime(e.target.value)}/> */}
-                    <input type="date" name="time" onChange={handleChange} /> 
+                    <input type="time" name="time" onChange={handleChange} /> 
 
                 </label>
                 <label>
                     <p><strong>NEXRAD Center</strong></p>
                     {/* <input type="text" id="datacenter" onChange={e => setDataCenter(e.target.value)}/> */}
-                    <input type="date" name="datacenter" onChange={handleChange} /> 
+                    <input type="text" name="datacenter" onChange={handleChange} /> 
 
                 </label>
                  <button type="submit" align="center" >Diagnose Current Atmospheric Conditions </button>
