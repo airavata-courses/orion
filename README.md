@@ -24,5 +24,5 @@ Run the following commands in the project directory
 ### Option 2: Pull the docker image from the remote docker repository and execute the container
 Run the following commands in the project directory
 1. docker pull anbadrin/orion-assignment1:plot-graph-v1
-2. docker run -d --name adsassignment1-plot -p 8000:8000 plot-graph
+2. docker run -d --name adsassignment1-plot -p 8000:8000 anbadrin/orion-assignment1:plot-graph-v1
 <p>The plot microservice will be hosted on localhost:8000</p>
