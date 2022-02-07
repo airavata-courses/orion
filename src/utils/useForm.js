@@ -7,18 +7,17 @@ const useForm = (callback) => {
      //Form values
      const [values, setValues] = useState({});
      //Errors
-     const [errors, setErrors] = useState({});
 
 
      
      const handleSubmit = (event) => {
         if(event) event.preventDefault();
-
-        if(Object.keys(errors).length === 0 && Object.keys(values).length !==0 ){
+        const msg = validate();
+        if(!msg){
             callback();
 
         }else{
-            alert("There is an Error!");
+            alert(msg);
         }
     }
 
@@ -30,8 +29,6 @@ const useForm = (callback) => {
 
         let name = event.target.name;
         let val = event.target.value;
-
-        validate(event,name,val);
         //Let's set these values in state
 
         setValues({
@@ -43,71 +40,23 @@ const useForm = (callback) => {
     }
 
 
-    const validate = (event, name, value) => {
+    const validate = () => {
         //A function to validate each input values
-    
-        switch (name) {
-            case 'date':
-                if (value=='') {
-                    // we will set the error state
-    
-                    setErrors({
-                        ...errors,
-                        date: 'Date cannot be empty'
-                    })
-                } else {
-    // set the error state empty or remove the error for username input
-    
-    //omit function removes/omits the value from given object and returns a new object
-                    let newObj = omit(errors, "date");
-                    setErrors(newObj);
-    
-                }
-                break;
-                case 'time':
-                if (value=='') {
-                    // we will set the error state
-    
-                    setErrors({
-                        ...errors,
-                        date: 'Time cannot be empty'
-                    })
-                } else {
-    // set the error state empty or remove the error for username input
-    
-    //omit function removes/omits the value from given object and returns a new object
-                    let newObj = omit(errors, "time");
-                    setErrors(newObj);
-    
-                }
-                break;
-                case 'datacenter':
-
-                if (value=='') {
-                    // we will set the error state
-    
-                    setErrors({
-                        ...errors,
-                        datacenter: 'datacenter cannot be empty'
-                    })
-                } else {
-    // set the error state empty or remove the error for username input
-    
-    //omit function removes/omits the value from given object and returns a new object
-                    let newObj = omit(errors, "datacenter");
-                    setErrors(newObj);
-    
-                }
-                break;
-    
-            default:
-                break;
+        const {date,time,datacenter} = values
+        if (!date){
+            return 'Date cannot be empty'
         }
+        if (!time){
+            return 'Time cannot be empty'
+        }
+        if(!datacenter){
+            return 'Datacenter cannot be empty'
+        }
+        return null
     }
 
     return{
         values,
-        errors,
         handleChange,
         handleSubmit
     }

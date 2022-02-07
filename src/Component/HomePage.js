@@ -26,7 +26,7 @@ export default function HomePage(userData){
 
     // response from the backend 
     const formSubmit = async e => {
-        e.preventDefault();
+        if(e) e.preventDefault();
         res = await sendData({date,time,datacenter});
         setResponse(res);
         console.log(response);                                        
