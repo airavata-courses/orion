@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import useForm from '../utils/useForm';
 
+
+// post request to gateway/ingester
 async function sendData(data) {
     return fetch('http://localhost:8080/login', {
       method: 'POST',
@@ -17,14 +20,16 @@ export default function HomePage(userData){
     const [date, setDate] = useState();
     const [time, setTime] = useState();
     const [datacenter, setDataCenter] = useState();
+    const {handleChange, values,errors,handleSubmit } = useForm(formSubmit);
+    const [response, setResponse] = useState([]);
+    var res = []
 
-
-    console.log("userdata:"+userData);
-
-    const handleSubmit = async e => {
+    // response from the backend 
+    const formSubmit = async e => {
         e.preventDefault();
-        const response = await sendData({date,time,datacenter,userData});
-        console.log(response.data);
+        res = await sendData({date,time,datacenter});
+        setResponse(res);
+        console.log(response);                                        
     }
 
    
@@ -35,19 +40,28 @@ export default function HomePage(userData){
             <form onSubmit={handleSubmit}>
                 <label>
                     <p><strong>Date</strong></p>
-                    <input type="date" onChange={e => setDate(e.target.value)} />
+                    {/* <input type="date" id="date" onChange={e => setDate(e.target.value)} /> */}
+                    <input type="date" name="date" onChange={handleChange} /> 
+
                 </label>
                 <label>
                     <p><strong>Time</strong></p>
-                    <input type="time" onChange={e => setTime(e.target.value)}/>
+                    {/* <input type="time" id="time" onChange={e => setTime(e.target.value)}/> */}
+                    <input type="date" name="time" onChange={handleChange} /> 
+
                 </label>
                 <label>
                     <p><strong>NEXRAD Center</strong></p>
-                    <input type="text" onChange={e => setDataCenter(e.target.value)}/>
+                    {/* <input type="text" id="datacenter" onChange={e => setDataCenter(e.target.value)}/> */}
+                    <input type="date" name="datacenter" onChange={handleChange} /> 
+
                 </label>
-                 
                  <button type="submit" align="center" >Diagnose Current Atmospheric Conditions </button>
             </form>
+            {
+                response.map(e1=>
+                    <img src={`data:image/png;base64,${e1}`} alt="Plot" key={e1}/>)
+            }
         </div> 
         );
         }

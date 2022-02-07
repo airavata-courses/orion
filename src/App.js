@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import HomePage from './Component/HomePage';
-import GoogleLoginComp from './Component/GoogleLoginComp';
-import GoogleLogoutComp from './Component/GoogleLogoutComp';
 import GoogleLoginComponent from './Component/GoogleLoginComponent';
-
-
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
-
 
 
 
