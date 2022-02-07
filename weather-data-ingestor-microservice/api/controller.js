@@ -14,7 +14,7 @@ const AWS = require('aws-sdk');
          const { body } = req;
          console.log("body=",req.body)
          const { date, time:hour, datacenter:radar } = body;
-         const [year, day, month] = date.split("-")
+         const [year, month, day] = date.split("-")
 
          BucketConfig.Prefix = `${year}/${month}/${day}/${radar}/`;
 
@@ -28,11 +28,12 @@ const AWS = require('aws-sdk');
                  if (data) {
                      const { Contents } = data;
                      if (Contents.length) {
+                         var hour_ = hour.substring(0,2);
                          Contents
                              .forEach(({ Key }) => {
                                  const [, hourString] = Key.split("_");
                                  const hr = hourString.substring(0, 2);
-                                 if (hr === hour) {
+                                 if (hr === hour_) {
                                      result.push(Key)
                                  }
                              })
