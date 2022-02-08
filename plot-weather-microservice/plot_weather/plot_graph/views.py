@@ -23,8 +23,11 @@ class PlotAPIView(APIView):
         print(files)
         file_list = files.split("/")
         print("Files list=",file_list)
-        file = urllib.request.urlretrieve('https://noaa-nexrad-level2.s3.amazonaws.com/' + files,"aws_files/"+file_list[4])
-        filename = gzip.open('aws_files/' + file_list[4])
+        file = urllib.request.urlretrieve('https://noaa-nexrad-level2.s3.amazonaws.com/' + files, "aws_files/"+file_list[4])
+        if 'gz' in file_list[4]:
+            filename = gzip.open('aws_files/' + file_list[4])
+        else:
+            filename = 'aws_files/' + file_list[4]
         return filename
 
     def createGraph(self, filename):
@@ -44,7 +47,7 @@ class PlotAPIView(APIView):
         b64 = []
         json_str = json.dumps(request.data)
         json_data = json.loads(json_str)
-
+        #uri = json_data['uri']
         for i in range(len(json_data)):
             fname = json_data[i]
             print(fname)
@@ -53,4 +56,10 @@ class PlotAPIView(APIView):
             plt.savefig(flike)
             b64.append(base64.b64encode(flike.getvalue()).decode())
 
+        """resp = {
+            'id':json_data['entryId'],
+            'uri':b64
+        }"""
+
+        #return Response(resp)
         return Response(b64,content_type='image/jpg')
