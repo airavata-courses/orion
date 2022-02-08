@@ -10,7 +10,7 @@ var app = express();
 
 const port = process.env.PORT || 4001;
 app.use(cors({ credentials: true,
-  origin: "http://localhost:3001",
+  origin: "http://localhost:3002",
     }));
 
 var index = require('./routes/index');
@@ -60,9 +60,9 @@ app.post('/orionweather', function(req, resp, next) {
   });
   // From Gateway to Ingestor
   axios
-  .post('http://localhost:3003/api/uri/images/',req.body)
+  .post('http://localhost:3001/api/uri/images/',req.body)
   .then(ingestorResponse => {
-    let ingestorUri = ingestorResponse.data[0];
+    let ingestorUri = ingestorResponse.data;
     // From Ingestor to Registry
     axios
       .post('http://localhost:8091/registry/ingestorResponse',{entryId, ingestorUri})
@@ -75,7 +75,7 @@ app.post('/orionweather', function(req, resp, next) {
       .then(responseFromPlotter => {
 
         // From Plotter to Registry
-        let plotData = responseFromPlotter.data[0];
+        let plotData = responseFromPlotter.data;
         axios
           .post('http://localhost:8091/registry/plotResponse',{entryId, plotData})
           .then(responseFromRegistry => {
