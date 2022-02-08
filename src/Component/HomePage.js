@@ -4,7 +4,7 @@ import useForm from '../utils/useForm';
 
 // post request to gateway/ingester
 async function sendData(data) {
-    return fetch('http://localhost:8080/login', {
+    return fetch('http://localhost:3000/orionweather', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -23,36 +23,36 @@ export default function HomePage(userData){
    
     const [response, setResponse] = useState([]);
     var res = []
-
+    var userEmail = userData["useremail"]
     // response from the backend 
     const formSubmit = async e => {
         if(e) e.preventDefault();
-        res = await sendData({date,time,datacenter});
+        res = await sendData({date,time,datacenter,userEmail});
         setResponse(res);
         console.log(response);                                        
     }
 
-    const {handleChange, values,errors,handleSubmit } = useForm(formSubmit);
+    // const {handleChange, values,errors,handleSubmit } = useForm(formSubmit);
         return(
         <div >
             <h1>View Current Atmospheric Conditions</h1>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={formSubmit}>
                 <label>
                     <p><strong>Date</strong></p>
-                    {/* <input type="date" id="date" onChange={e => setDate(e.target.value)} /> */}
-                    <input type="date" name="date" onChange={handleChange} /> 
+                    <input type="date" id="date" onChange={e => setDate(e.target.value)} />
+                    {/* <input type="date" name="date" onChange={handleChange} />  */}
 
                 </label>
                 <label>
                     <p><strong>Time</strong></p>
-                    {/* <input type="time" id="time" onChange={e => setTime(e.target.value)}/> */}
-                    <input type="time" name="time" onChange={handleChange} /> 
+                    <input type="time" id="time" onChange={e => setTime(e.target.value)}/>
+                    {/* <input type="time" name="time" onChange={handleChange} />  */}
 
                 </label>
                 <label>
                     <p><strong>NEXRAD Center</strong></p>
-                    {/* <input type="text" id="datacenter" onChange={e => setDataCenter(e.target.value)}/> */}
-                    <input type="text" name="datacenter" onChange={handleChange} /> 
+                    <input type="text" id="datacenter" onChange={e => setDataCenter(e.target.value)}/>
+                    {/* <input type="text" name="datacenter" onChange={handleChange} />  */}
 
                 </label>
                  <button type="submit" align="center" >Diagnose Current Atmospheric Conditions </button>
