@@ -37,7 +37,7 @@ public class RegistryEntry {
 
 	@Column(name = "plot_data")
 	@Lob
-	byte[] plotData;
+	byte[][] plotData;
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -45,7 +45,7 @@ public class RegistryEntry {
 
 	public RegistryEntry() {}
 	
-	public RegistryEntry(long entryId, String userEmail, String requestBody, String requestTime, String[] ingestorUri, byte[] plotData) {
+	public RegistryEntry(long entryId, String userEmail, String requestBody, String requestTime, String[] ingestorUri, byte[][] plotData) {
 		this.entryId = entryId;
 		this.userEmail = userEmail;
 		this.requestBody = requestBody;
@@ -53,7 +53,7 @@ public class RegistryEntry {
 		this.ingestorUri = ingestorUri;
 		this.plotData = plotData;
 	}
-	public RegistryEntry(String userEmail, String requestBody, String requestTime, String[] ingestorUri, byte[] plotData) {
+	public RegistryEntry(String userEmail, String requestBody, String requestTime, String[] ingestorUri, byte[][] plotData) {
 		this.userEmail = userEmail;
 		this.requestBody = requestBody;
 		this.requestTime = requestTime;
@@ -90,10 +90,10 @@ public class RegistryEntry {
 	public void setRequestTime(String requestTime) {
 		this.requestTime = requestTime;
 	}
-	public byte[] getPlotData() {
+	public byte[][] getPlotData() {
 		return plotData;
 	}
-	public void setPlotData(byte[] plotData) {
+	public void setPlotData(byte[][] plotData) {
 		this.plotData = plotData;
 	}
 
