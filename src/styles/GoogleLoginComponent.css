@@ -1,0 +1,39 @@
+.Google {
+    text-align: center;
+  }
+  
+
+  .Google-bg{
+    background-color: #6b9bf5;
+  }
+  
+  
+  .Google-header {
+    align-items: left;
+    justify-content: left;
+    font-size: calc(5px + 2vmin);
+    color: white;
+    flex-direction: row;
+  }
+  
+  .Google-link {
+    color: #61dafb;
+  }
+  .Google-wrapper {
+    background-color: #011335;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+  }
+  
+  @keyframes Google-logo-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
