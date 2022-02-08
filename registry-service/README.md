@@ -40,7 +40,7 @@ This microservice, by default, uses the following port numbers:
 If any of the following settings are different for your machine, please change them at `registry-service/src/main/resources/application.properties`
 
 ```
-spring.datasource.url=jdbc:mysql://localhost:PORT_NUMBER/RequestLog?useSSL=false
+spring.datasource.url=jdbc:mysql://localhost:PORT_NUMBER/requestlog?useSSL=false
 spring.datasource.username=USERNAME
 spring.datasource.password=PASSWORD
 server.port = SERVER_PORT
@@ -89,6 +89,8 @@ Oracle JDK11 can be downloaded from [here](https://www.oracle.com/java/technolog
 
 ### Running the MySQL server
 
+Please start the MySQL service using the following commands:
+
 #### Linux
 
 In linux, after installing MySQL, run the following command to start the MySQL server:
@@ -98,6 +100,11 @@ sudo service mysql start
 
 Refer [this link](https://www.mysqltutorial.org/mysql-adminsitration/start-mysql/) to explore more ways to run it on Linux.
 
+#### MacOS
+
+```
+mysql.server start
+```
 
 #### Windows
 
@@ -106,3 +113,19 @@ Refer [this link](https://www.mysqltutorial.org/mysql-adminsitration/start-mysql
 3. Type `mysqld` and press the `Enter` key
 
 Refer [this link](https://www.mysqltutorial.org/mysql-adminsitration/start-mysql/) if you face issues starting the service.
+
+
+### Creating a database in MySQL 
+
+After starting the MySQL service, and before running the registry microservice, a database must be created.
+
+#### To create the database
+
+Enter the MySQL shell using the command 
+```
+mysql -u root -p
+```
+
+```
+CREATE DATABASE requestlog;
+```
