@@ -33,7 +33,7 @@ public class RegistryEntry {
 	String requestTime;
 
 	@Column(name = "ingestor_uri")
-	String ingestorUri;
+	String[] ingestorUri;
 
 	@Column(name = "plot_data")
 	@Lob
@@ -45,7 +45,7 @@ public class RegistryEntry {
 
 	public RegistryEntry() {}
 	
-	public RegistryEntry(long entryId, String userEmail, String requestBody, String requestTime, String ingestorUri, byte[] plotData) {
+	public RegistryEntry(long entryId, String userEmail, String requestBody, String requestTime, String[] ingestorUri, byte[] plotData) {
 		this.entryId = entryId;
 		this.userEmail = userEmail;
 		this.requestBody = requestBody;
@@ -53,7 +53,7 @@ public class RegistryEntry {
 		this.ingestorUri = ingestorUri;
 		this.plotData = plotData;
 	}
-	public RegistryEntry(String userEmail, String requestBody, String requestTime, String ingestorUri, byte[] plotData) {
+	public RegistryEntry(String userEmail, String requestBody, String requestTime, String[] ingestorUri, byte[] plotData) {
 		this.userEmail = userEmail;
 		this.requestBody = requestBody;
 		this.requestTime = requestTime;
@@ -72,10 +72,10 @@ public class RegistryEntry {
 	public void setUserEmail(String userEmail) {
 		this.userEmail = userEmail;
 	}
-	public String getIngestorUri() {
+	public String[] getIngestorUri() {
 		return ingestorUri;
 	}
-	public void setIngestorUri(String ingestorUri) {
+	public void setIngestorUri(String[] ingestorUri) {
 		this.ingestorUri = ingestorUri;
 	}
 	public String getRequestBody() {
