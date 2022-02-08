@@ -1,28 +1,129 @@
-# Creating a Django Framework for REST
-### Installation
-Run the following commands:
-1. pip install django
-2. pip install djangorestframework
+# Orion
 
-### Create a Django Project
-Run the following commands
-1. django-admin startproject <project_name>
-2. django-admin startapp <app_name>
 
-### Creating a Docker Image and executing on Docker
-1. Create a Dockerfile in the project directory with the required commands to be executed in runtime
-2. Create a requirements.txt file with the packages and their required versions
-3. Execute the build and run commands to create the image and container and run the container
 
-### Steps to be followed to run the Plot microservice (Python)
-### Option 1: Create an image and run the container
-Run the following commands in the project directory
-1. docker build . -t plot-graph
-2. docker run -d --name adsassignment1-plot -p 8000:8000 plot-graph
-<p>The plot microservice will be hosted on localhost:8000</p>
+Release branch names:
+- `a1-plot-graph-release`
+- `a1-data-ingestor-release`
+- `a1-registry-release`
+- `a1-gateway-release`
+- `a1-ui-release`
 
-### Option 2: Pull the docker image from the remote docker repository and execute the container
-Run the following commands in the project directory
-1. docker pull anbadrin/orion-assignment1:plot-graph-v1
-2. docker run -d --name adsassignment1-plot -p 8000:8000 anbadrin/orion-assignment1:plot-graph-v1
-<p>The plot microservice will be hosted on localhost:8000</p>
+---
+#### Please follow the order of execution of microservices as mentioned in this document
+---
+
+## Plot Graph Microservice
+
+Following are the steps for running the microservice:
+
+### Using Docker
+
+For running it with Docker, please pull the repository and run the following commands:
+```
+git clone https://github.com/airavata-courses/orion
+cd orion
+git checkout a1-plot-graph-release
+cd plot-weather-microservice
+```
+
+```
+docker build . -t plot
+docker run -d --name adsA1-plot -p 8000:8000 plot
+```
+
+**NOTE:** This microservice runs at PORT number **`8000`**
+
+### Build from Source
+
+
+Please pull the repository and run the following commands:
+```
+git clone https://github.com/airavata-courses/orion
+cd orion
+git checkout a1-data-ingestor-release
+cd plot-weather-microservice
+```
+
+```
+python3 manage.py runserver
+```
+
+
+## Data Ingestor Microservice
+
+Following are the steps for running the microservice:
+
+### Build from Source
+
+
+Please pull the repository and run the following commands:
+```
+git clone https://github.com/airavata-courses/orion
+cd orion
+git checkout a1-data-ingestor-release
+cd weather-data-ingestor-microservice
+```
+
+```
+npm install
+npm start
+```
+
+**NOTE:** This microservice runs at PORT number **`3001`**
+
+
+
+## Gateway Microservice
+
+Following are the steps for running the microservice:
+
+### Build from Source
+
+Please pull the repository and run the following commands:
+```
+git clone https://github.com/airavata-courses/orion
+cd orion
+git checkout a1-gateway-release
+cd gateway-service
+```
+
+```
+npm install
+npm start
+```
+
+**NOTE:** This microservice runs at PORT number **`3000`**
+
+
+
+
+## Registry Microservice
+
+Since this microservice has external dependencies (MySQL), please refer its standalone README [here](https://github.com/airavata-courses/orion/blob/a1-registry-release/registry-service/README.md)
+
+**NOTE:** This microservice runs at PORT number **`8091`**
+
+
+
+
+## UI Microservice
+
+Following are the steps for running the microservice:
+
+### Build from Source
+
+Please pull the repository and run the following commands:
+```
+git clone https://github.com/airavata-courses/orion
+cd orion 
+git checkout a1-ui-release
+
+```
+
+```
+npm install
+npm start
+```
+
+**NOTE:** This microservice runs at PORT number **`3002`**
