@@ -16,6 +16,3 @@ workflows:
   on_commit:
     jobs:
       - build_and_test
-      filters:
-        branches:
-          only: a2-ui-circleci
