@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:16 AS react-build
 # Create app directory
 WORKDIR ./
 # Install app dependencies
@@ -8,4 +8,8 @@ RUN npm install
 
 COPY ./ ./
 
-CMD [ "npm", "start" ]
+RUN npm run build
+
+FROM nginx
+
+COPY --from=react-build ./build /usr/share/nginx/html
