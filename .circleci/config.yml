@@ -18,7 +18,7 @@ workflows:
     jobs:
       - build_and_test
       - docker/publish:
-          image: anbadrin/orion-assignment1:ui
+          image: anbadrin/orion-assignment1
           dockerfile: Dockerfile
           requires:
             - build_and_test
