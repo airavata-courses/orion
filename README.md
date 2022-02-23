@@ -34,6 +34,22 @@ docker run -d --name adsA1-plot -p 8000:8000 plot
 
 **NOTE:** This microservice runs at PORT number **`8000`**
 
+### Build from Source
+
+
+Please pull the repository and run the following commands:
+```
+git clone https://github.com/airavata-courses/orion
+cd orion
+git checkout a1-data-ingestor-release
+cd plot-weather-microservice
+```
+
+```
+python3 manage.py runserver
+```
+
+
 ## Data Ingestor Microservice
 
 Following are the steps for running the microservice:
@@ -108,6 +124,3 @@ git checkout a1-ui-release
 ```
 npm install
 npm start
-```
-
-**NOTE:** This microservice runs at PORT number **`3002`**
