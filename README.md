@@ -124,3 +124,7 @@ git checkout a1-ui-release
 ```
 npm install
 npm start
+```
+
+**NOTE:** This microservice runs at PORT number **`3002`**
+
