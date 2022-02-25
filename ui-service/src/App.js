@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import GoogleLoginComponent from './Component/GoogleLoginComponent';
-
+import * as socket from "./websocket-client.js"
 
 
 function App() {
