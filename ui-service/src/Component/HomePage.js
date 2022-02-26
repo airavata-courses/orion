@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { initWS } from '../websocket-client.js';
 import useForm from '../utils/useForm';
 
 
@@ -22,6 +23,12 @@ export default function HomePage(userData){
     const [datacenter, setDataCenter] = useState();
    
     const [response, setResponse] = useState([]);
+
+    useEffect(() => {
+        const ws = new WebSocket("ws://localhost:4000");
+        initWS(ws, setResponse)
+    }, [])
+
     var res = []
     var userEmail = userData["useremail"]
     // response from the backend 
