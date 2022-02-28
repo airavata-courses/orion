@@ -1,84 +1,58 @@
 package com.orionweather.registry.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 
-import java.util.Optional;
-
+import com.orionweather.registry.model.IngestorResponse;
+import com.orionweather.registry.model.PlotterResponse;
 import com.orionweather.registry.model.RegistryEntry;
+import com.orionweather.registry.model.RegistryEntry.RegistryEntryBuilder;
 import com.orionweather.registry.model.RegistryEntryRepository;
-import com.orionweather.registry.model.RegistryEntryWrapper;
 import com.orionweather.registry.model.RequestEntry;
+import com.orionweather.registry.model.UserRequest;
 
-@RestController
-@RequestMapping(path = "/registry")
+@Controller
 public class RegistryController {
 
 	@Autowired
 	RegistryEntryRepository registryRepository;
 
-	@GetMapping(path = {"/getAll"},
-			consumes = {},
-			produces = {"application/json","application/xml"})
-	@ResponseBody
-	public ResponseEntity<RegistryEntryWrapper> readStatus() {
-		return new ResponseEntity<RegistryEntryWrapper>(new RegistryEntryWrapper(registryRepository.findAll()),HttpStatus.OK);
+	public Iterable<RegistryEntry> readStatusHandler() {
+		return registryRepository.findAll();
 	}
 
-	@PostMapping(path = {"/addEntry"},
-			consumes = {MediaType.APPLICATION_JSON_VALUE},
-			produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE})
-	@ResponseBody
-	public ResponseEntity<RegistryEntry>  createEntry(@RequestBody RegistryEntry registryEntry) {
-
-		System.out.println("Tjis");
+	public RegistryEntry createEntryHandler(RegistryEntry registryEntry) {
 		registryEntry.setEntryId(-1);
 		registryRepository.save(registryEntry);
-		return new ResponseEntity<RegistryEntry>(registryEntry, HttpStatus.OK);
+		return registryEntry;
 	}
 
-	@PostMapping(path = {"/newRequest"},
-			consumes = {MediaType.APPLICATION_JSON_VALUE},
-			produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE})
-	@ResponseBody
-	public ResponseEntity<Long>  addRequest(@RequestBody RequestEntry requestEntry) {
-
+	public long addRequestHandler(RequestEntry requestEntry) {
 		RegistryEntry registryEntry = new RegistryEntry();
 		registryEntry.setEntryId(-1);
 		registryEntry.setRequestValues(requestEntry);
 		registryEntry = registryRepository.save(registryEntry);
-		return new ResponseEntity<Long>(registryEntry.getEntryId(), HttpStatus.OK);
+		return registryEntry.getEntryId();
 	}
 
-	@PostMapping(path = {"/plotResponse"},
-			consumes = {MediaType.APPLICATION_JSON_VALUE},
-			produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE})
-	@ResponseBody
-	public ResponseEntity<RegistryEntry>  plotResponse(@RequestBody RegistryEntry registryEntry) {
-
-		RegistryEntry rE = registryRepository.findById(registryEntry.getEntryId()).get();
-		rE.setPlotData(registryEntry.getPlotData());
-		registryRepository.save(rE);
-		return new ResponseEntity<RegistryEntry>(registryEntry, HttpStatus.OK);
+	public long addRequestHandler(UserRequest requestEntry) {
+		RegistryEntry registryEntry = new RegistryEntryBuilder()
+				.entryId((long) -1).userRequest(requestEntry).build();
+		registryEntry = registryRepository.save(registryEntry);
+		return registryEntry.getEntryId();
 	}
 
-	@PostMapping(path = {"/ingestorResponse"},
-			consumes = {MediaType.APPLICATION_JSON_VALUE},
-			produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE})
-	@ResponseBody
-	public ResponseEntity<RegistryEntry> ingestorResponse(@RequestBody RegistryEntry registryEntry) {
-
-		RegistryEntry rE = registryRepository.findById(registryEntry.getEntryId()).get();
-		rE.setIngestorUri(registryEntry.getIngestorUri());
+	public RegistryEntry plotterResponseHandler(PlotterResponse plotterResponse) {
+		RegistryEntry rE = registryRepository.findById(plotterResponse.getRequestId()).get();
+		rE.setPlotData(plotterResponse.getPlotData());
 		registryRepository.save(rE);
-		return new ResponseEntity<RegistryEntry>(registryEntry, HttpStatus.OK);
+		return rE;
+	}
+
+	public RegistryEntry ingestorResponseHandler(IngestorResponse ingestorResponse) {
+		RegistryEntry rE = registryRepository.findById(ingestorResponse.getRequestId()).get();
+		rE.setIngestorUri(ingestorResponse.getIngestorUri());
+		registryRepository.save(rE);
+		return rE;
 	}
 }

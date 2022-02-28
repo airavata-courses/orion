@@ -84,11 +84,25 @@ npm start
 
 ## Registry Microservice
 
-Since this microservice has external dependencies (MySQL), please refer its standalone README [here](https://github.com/airavata-courses/orion/blob/a1-registry-release/registry-service/README.md)
-
-**NOTE:** This microservice runs at PORT number **`8091`**
+Run the following commands to run the registry as a docker container
 
 
+#### MySQL Server
+
+```
+docker pull mysql/mysql-server:latest
+
+docker run -it --network registry_network --name registry-mysql -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=requestLog -e MYSQL_USER=root -e MYSQL_PASSWORD=root -d mysql/mysql-server:latest
+
+```
+
+
+#### Maven Docker Build
+```
+docker build --tag orion-registry . 
+
+docker run -d -it --network registry_network --name adsA2-registry -p 8091:8091 orion-registry
+```
 
 
 ## UI Microservice
