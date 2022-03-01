@@ -1,7 +1,7 @@
 
 const express = require('express')
-const routes = require('./api/routes');
-
+const controller = require('./api/controller');
+console.log(controller)
 
  //init express
  const app = express()
@@ -28,7 +28,7 @@ amqp.connect('amqp://localhost', function(error0, connection) {
     if (error1) {
       throw error1;
     }
-    var queue = 'rpc_queue';
+    var queue = 'rpc_queue_1';
 
     channel.assertQueue(queue, {
       durable: false
@@ -38,10 +38,14 @@ amqp.connect('amqp://localhost', function(error0, connection) {
     console.log(' [x] Awaiting RPC requests');
     channel.consume(queue, function reply(msg) {
 
-    //   var n = parseInt(msg.content.toString());
+      // var n = parseInt(msg.content.toString());
+      var n = parseInt(msg.content);
 
-    //   console.log(" [.] fib(%d)", n);
+      // console.log(" [.] fib(%d)", n);
+      console.log(n);
 
+    var r = controller.fib(n);
+    console.log(r)
     //   var r = fibonacci(n); // function call. need to check with anita 
     console.log("msg"+msg.content.toJSON());
     var r= msg.content;
@@ -56,9 +60,3 @@ amqp.connect('amqp://localhost', function(error0, connection) {
   });
 });
 
-// function fibonacci(n) {
-//   if (n == 0 || n == 1)
-//     return n;
-//   else
-//     return fibonacci(n - 1) + fibonacci(n - 2);
-// }
