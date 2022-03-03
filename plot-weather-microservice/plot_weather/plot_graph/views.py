@@ -1,6 +1,8 @@
 import gzip
+from locale import CODESET
 import urllib
 from datetime import datetime
+import pika, sys, os
 
 import nexradaws
 import pyart
@@ -43,6 +45,7 @@ class PlotAPIView(APIView):
         display.set_limits(xlim=(-500, 500), ylim=(-500, 500), ax=ax)
         return plt
 
+    #The input received from the MQ will be passed to this function
     def post(self, request):
         b64 = []
         json_str = json.dumps(request.data)
@@ -61,5 +64,63 @@ class PlotAPIView(APIView):
             'uri':b64
         }"""
 
+        # Add the mq response code
+
         #return Response(resp)
+        #Remove this line if not required
         return Response(b64,content_type='image/jpg')
+
+
+
+""""
+RABBITMQ CODE
+
+"""""
+# establish connection with rabbitmq server 
+connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+channel = connection.channel()
+
+#create/ declare queue
+channel.queue_declare(queue='plot_queue')
+
+
+# subscribe a callback function to the queue. This callback function is called by the pika library
+# It does the work and sends the response back.
+def on_request(ch, method, props, body):
+        # our message content will be in body 
+        n = int(body) 
+
+        print(" [.] fib(%s)" % n)
+
+        # instead of fib here our plot graph function should be called and response should be saved here 
+        response = fib(n) 
+
+        ch.basic_publish(exchange='',
+                        routing_key=props.reply_to,
+                        properties=pika.BasicProperties(correlation_id = \
+                                                            props.correlation_id),
+                        body=str(response))
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+# We might want to run more than one server process. 
+# In order to spread the load equally over multiple servers we need to set the prefetch_count setting.
+channel.basic_qos(prefetch_count=1)
+        
+# We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
+channel.basic_consume(queue='plot_queue', on_message_callback=on_request)
+
+print(" [x] Awaiting RPC requests")
+channel.start_consuming()
+
+print(' [*] Waiting for messages. To exit press CTRL+C')
+channel.start_consuming()
+
+
+
+def fib(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return fib(n - 1) + fib(n - 2)
