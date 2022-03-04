@@ -1,112 +1,43 @@
 
-
-var express = require('express');
-
-var amqp = require('amqplib/callback_api');
-
-// var args = process.argv.slice(2);
-
-// if (args.length == 0) {
-//   console.log("Usage: rpc_client.js num");
-//   process.exit(1);
-// }
-var app = express();
-
-amqp.connect('amqp://localhost', function(error0, connection) {
-  if (error0) {
-    throw error0;
-  }
-  connection.createChannel(function(error1, channel) {
-    if (error1) {
-      throw error1;
-    }
-    channel.assertQueue('gateway_rx', {
-      exclusive: false
-    }, function(error2, q) {
-      if (error2) {
-        throw error2;
-      }
-      console.log("gateway_rx channel association successful");
-      var correlationId = generateUuid();
-      var num = 6;
-      console.log(q);
-
-      // console.log(' [x] Requesting fib(%d)', num);
-      let date='2013-05-21'; let time='06:00'; let datacenter='KAMX'; 
-      let data = {date, time, datacenter};
-      let stringData = JSON.stringify(data);
-      console.log("This is how it's getting sent:",stringData);
-      channel.sendToQueue('ingestor_rx',
-        Buffer.from(stringData),{
-          
-          // Buffer.from( data.toString()),{
-          correlationId,
-          replyTo: "gateway_rx" });
-
-      channel.consume("gateway_rx", function(msg) {
-        if (msg.properties.correlationId == correlationId) {
-          var nLog = JSON.parse(msg.content.toString());
-          console.log(' [.] Got');
-          console.log(nLog);
-          setTimeout(function() {
-            connection.close();
-            process.exit(0)
-          }, 500);
-        }
-      }, {
-        noAck: true
-      });
-    });
-  });
-});
-
-function generateUuid() {
-  return Math.random().toString() +
-         Math.random().toString() +
-         Math.random().toString();
-}
-
-module.exports = app;
-/*var createError = require('http-errors');
+var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors')
-const http = require("http");
+
+var amqp = require('amqplib/callback_api');
+
+let respList = [];
+var connectionVar;
+var channelVar;
+
+amqp.connect('amqp://orionRabbit', ampqConnectionInit);
 
 var app = express();
-var rpc_serv = require('./rabbitmq/rpc_server');
-// var router = require("./routes/index")
 
 app.use(cors({ credentials: true,
   origin: "http://localhost:3002",
     }));
-// rpc_serv.connect();
 
-var index = require('./routes/index');
+// var index = require('./routes/index');
 var registry = require('./routes/registry');
+// const { syncBuiltinESMExports } = require('module');
+// const { channel } = require('diagnostics_channel');
 
 // var apiHelper = require('./routes/apiHelper');
 // view engine setup
 app.use(express.json());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-app.use("/index", index);
+// app.use("/index", index);
 app.use("/registry", registry);
-
-// const server = http.createServer(app);
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -118,49 +49,115 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-var port = process.env.PORT || '3004';
-
+var port = process.env.PORT || '4000';
+var correlationIds = [];
 app.listen(port, () => console.log(`Listening on port ${port}`));
 
-var amqp = require('amqplib/callback_api');
+app.post('/orionweather', postHandler);
 
-amqp.connect('amqp://localhost:5672', function(error0, connection) {
-    if (error0) {
-        throw error0;
-    }
-    console.log("amqp connected");
-  // create channel ,establiish connection and declare the queue
-  connection.createChannel(function(error1, channel) {
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
+});
+
+function generateUuid() {
+  return Math.random().toString() +
+         Math.random().toString() +
+         Math.random().toString();
+}
+
+function ampqConnectionInit(error0, connection) {
+  if (error0) {
+    throw error0;
+  }
+  console.log("Connection to Rabbit MQ successful");
+  connectionVar = connection;
+  connectionVar.createChannel(function(error1, channel) {
     if (error1) {
       throw error1;
     }
-    var queue = 'rpc_queue';
-
-    channel.assertQueue(queue, {
-      durable: false
-    });
-    // to spread the load equally over multiple servers we need to set the prefetch setting on the channel
-    channel.prefetch(1);
-    console.log(' [x] Awaiting RPC requests');
-    channel.consume(queue, function reply(msg) {
-
-    //   var n = parseInt(msg.content.toString());
-
-    //   console.log(" [.] fib(%d)", n);
-
-    //   var r = fibonacci(n); // function call. need to check with anita 
-    console.log("msg"+msg.content.toJSON());
-    var r= msg.content;
-    console.log(r.toJSON());
-      channel.sendToQueue(msg.properties.replyTo,
-        Buffer.from(r.toString()), {
-          correlationId: msg.properties.correlationId
-        });
-
-      channel.ack(msg);
-    });
+    console.log("Channel created for Rabbit MQ");
+    channelVar = channel;
   });
-});
+}
+
+function ampqConnectionHandler(error0, connection) {
+  if (error0) {
+    respBody = {"error":"Could not create connection"};
+    console.log(respBody);
+    throw error0;
+  }
+  console.log("We have connection now",connection);
+  connectionVar = connection;
+}
+
+function ampqChannelHandler(error1, channel) {
+  if (error1) {
+    respBody = {"error":"Could not create channel"};
+    console.log(respBody);
+    // resp.json(respBody).status(500);
+    throw error1;
+  }
+  console.log("Channel Created now");
+  channelVar = channel;
+}
+
+async function postHandler(req, resp, next) {
+  let respBody;
+  // resp.header("Access-Control-Allow-Origin", "*");
+  console.log("Received POST request at orionweather");
+  console.log(req.body);
+  if(!connectionVar) {
+    amqp.connect('amqp://orionRabbit', ampqConnectionHandler);
+  }
+  if(!channelVar) {
+    connectionVar.createChannel(ampqChannelHandler);
+  }
+
+  channelVar.assertQueue('gateway_rx', {
+    exclusive: false
+  }, function(error2, q) {
+    if (error2) {
+      respBody = {"error":"Could not connect to queue to send message"};
+      console.log(respBody);
+      throw error2;
+    }
+    console.log("gateway_rx channel association successful");
+    var correlationId = generateUuid();
+    correlationIds.push(correlationId);
+    let stringData = JSON.stringify(req.body);
+    console.log("This is how it's getting sent: ",stringData);
+    channelVar.sendToQueue('ingestor_rx',
+      Buffer.from(stringData),{
+        correlationId,
+        replyTo: "gateway_rx" });
+  });
+  var nLog;
+  channelVar.consume("gateway_rx", function(msg) {
+    let correlationRecv = msg.properties.correlationId;
+    if (correlationIds.indexOf(correlationRecv)>-1) {
+      correlationIds.filter(function(value, index, arr){ 
+        return value != correlationRecv;
+      });
+      nLog = JSON.parse(msg.content.toString());
+      console.log(' [.] Received from queue: ', nLog);
+      respList.push(nLog);
+    }
+  }, {
+    noAck: false
+  });
+  await sleep(2000);
+  let val = respList.pop();
+  console.log(val);
+  resp.json(val).status(200).send();
+  return;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 module.exports = app;
-*/
