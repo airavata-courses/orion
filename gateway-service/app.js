@@ -6,9 +6,12 @@ var logger = require('morgan');
 var axios = require('axios');
 var cors = require('cors')
 const http = require("http");
+const WebSocket = require("ws");
+const serverSocket = require("./socket.js");
 var app = express();
 
-const port = process.env.PORT || 4001;
+const port = 4000;
+
 app.use(cors({ credentials: true,
   origin: "http://localhost:3002",
     }));
@@ -21,6 +24,9 @@ app.set('view engine', 'jade');
 app.use(index);
 
 const server = http.createServer(app);
+
+const wss = new WebSocket.Server({ server });
+serverSocket.initWS(wss);
 
 app.use(logger('dev'));
 app.use(express.json());

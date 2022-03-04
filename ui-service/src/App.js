@@ -3,7 +3,6 @@ import './App.css';
 import GoogleLoginComponent from './Component/GoogleLoginComponent';
 
 
-
 function App() {
   return (
     <div className="App-header">
