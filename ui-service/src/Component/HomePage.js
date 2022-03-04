@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { initWS } from '../websocket-client.js';
 import useForm from '../utils/useForm';
+import { initWS } from '../websocket-client.js';
 
 
 // post request to gateway/ingester
 async function sendData(data) {
-    return fetch('http://localhost:3000/orionweather', {
+    return fetch('http://localhost:4000/orionweather', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
