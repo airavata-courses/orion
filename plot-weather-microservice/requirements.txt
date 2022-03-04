@@ -1,0 +1,8 @@
+django==4.0.1
+djangorestframework==3.13.1
+nexradaws==1.1
+matplotlib==3.5.1
+scipy==1.7.3
+numpy==1.22.2
+pandas==1.4.0
+pika==1.2.0

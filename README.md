@@ -49,8 +49,6 @@ cd plot-weather-microservice
 python3 manage.py runserver
 ```
 
-
->>>>>>> origin/a1-gateway-release
 ## Data Ingestor Microservice
 
 Following are the steps for running the microservice:

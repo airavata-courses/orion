@@ -14,7 +14,12 @@ var channelVar;
 
 amqp.connect('amqp://orionRabbit', ampqConnectionInit);
 
+const http = require("http");
+const WebSocket = require("ws");
+const serverSocket = require("./socket.js");
 var app = express();
+
+const port = 4000;
 
 app.use(cors({ credentials: true,
   origin: "http://localhost:3002",
@@ -32,6 +37,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 // app.use("/index", index);
 app.use("/registry", registry);
+
+const wss = new WebSocket.Server({ server });
+serverSocket.initWS(wss);
 
 app.use(logger('dev'));
 app.use(express.json());

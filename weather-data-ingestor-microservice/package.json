@@ -1,0 +1,20 @@
+{
+  "name": "weather-data-ingestor-microservice",
+  "version": "1.0.0",
+  "description": "A Data Ingestor to ingest the data from the Weather UI",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "anbadrin",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "aws-sdk": "^2.1066.0",
+    "express": "^4.17.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
