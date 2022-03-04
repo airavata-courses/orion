@@ -1,17 +1,15 @@
-const socket = io => {
-    io.on('connection', client => {
-      console.log('New Connection');
+module.exports.initWS = (wss) => {
+  wss.on('connection', (ws) => {
+
+      //connection is up, let's add a simple simple event
+      ws.on('message', (message) => {
   
-      // socket event for client subscription
-      client.on('gateway', interval => {
-        console.log('Client is subscribing with interval: ', interval);
-  
-        // emit message to the client side
-        setInterval(() => {
-          client.emit('getDate', new Date().toUTCString());
-        }, interval);
+          //log the received message and send it back to the client
+          console.log('received: %s', message);
+          ws.send(`Hello, you sent -> ${message}`);
       });
-    });
-  }
   
-  module.exports = socket;
+      //send immediatly a feedback to the incoming connection    
+      ws.send('Hi there, I am a WebSocket server');
+  });
+}

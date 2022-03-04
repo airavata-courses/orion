@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useForm from '../utils/useForm';
+import { initWS } from '../websocket-client.js';
 
 
 // post request to gateway/ingester
 async function sendData(data) {
-    return fetch('http://localhost:3000/orionweather', {
+    return fetch('http://localhost:4000/orionweather', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -22,6 +23,12 @@ export default function HomePage(userData){
     const [datacenter, setDataCenter] = useState();
    
     const [response, setResponse] = useState([]);
+
+    useEffect(() => {
+        const ws = new WebSocket("ws://localhost:4000");
+        initWS(ws, setResponse)
+    }, [])
+
     var res = []
     var userEmail = userData["useremail"]
     // response from the backend 
