@@ -1,10 +1,19 @@
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var axios = require('axios');
 var cors = require('cors')
+
+var amqp = require('amqplib/callback_api');
+
+let respList = [];
+var connectionVar;
+var channelVar;
+
+amqp.connect('amqp://orionRabbit', ampqConnectionInit);
+
 const http = require("http");
 const WebSocket = require("ws");
 const serverSocket = require("./socket.js");
@@ -16,14 +25,18 @@ app.use(cors({ credentials: true,
   origin: "http://localhost:3002",
     }));
 
-var index = require('./routes/index');
-var apiHelper = require('./routes/apiHelper');
+// var index = require('./routes/index');
+var registry = require('./routes/registry');
+// const { syncBuiltinESMExports } = require('module');
+// const { channel } = require('diagnostics_channel');
+
+// var apiHelper = require('./routes/apiHelper');
 // view engine setup
+app.use(express.json());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-app.use(index);
-
-const server = http.createServer(app);
+// app.use("/index", index);
+app.use("/registry", registry);
 
 const wss = new WebSocket.Server({ server });
 serverSocket.initWS(wss);
@@ -33,73 +46,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/registry/status', function(req, resp, next) {
-  console.log('This just called', req.body);
-    axios
-      .get('http://localhost:8091/registry/status')
-      .then(res => {
-        resp.send(res.data)
-      })
-});
-
-
-app.post('/registry/status', function(req, resp, next) {
-  console.log('Post Status just called', req.body);
-  axios
-    .post('http://localhost:8091/registry/status', req.body)
-    .then( res => {
-        resp.send(res.data)
-    })
-    .catch(err => console.log(err))
-});
-
-app.post('/orionweather', function(req, resp, next) {
-  // resp.header("Access-Control-Allow-Origin", "*");
-
-  var entryId = -1;
-  // From UI to Registry
-  axios
-  .post('http://localhost:8091/registry/newRequest',req.body)
-  .then(responseFromReg => {
-    entryId = responseFromReg.data;
-  });
-  // From Gateway to Ingestor
-  axios
-  .post('http://localhost:3001/api/uri/images/',req.body)
-  .then(ingestorResponse => {
-    let ingestorUri = ingestorResponse.data;
-    // From Ingestor to Registry
-    axios
-      .post('http://localhost:8091/registry/ingestorResponse',{entryId, ingestorUri})
-      .then(responseFromRegi => {
-      });
-    if(ingestorResponse.status == 200) {
-      // From Gateway to Plot
-      axios
-      .post('http://localhost:8000/plotWeather/plotgraph',ingestorResponse.data)
-      .then(responseFromPlotter => {
-
-        // From Plotter to Registry
-        let plotData = responseFromPlotter.data;
-        axios
-          .post('http://localhost:8091/registry/plotResponse',{entryId, plotData})
-          .then(responseFromRegistry => {
-          });
-        resp.send(responseFromPlotter.data);
-      })
-    } else {
-        resp.send().status(400);
-        // io.emit("gateway", {status:{dataingestor:false, plot:false}});
-        // // axios.put('http://localhost:3001/status').status(400);
-      }
-    });
-});
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -111,7 +57,115 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+var port = process.env.PORT || '4000';
+var correlationIds = [];
+app.listen(port, () => console.log(`Listening on port ${port}`));
 
-server.listen(port, () => console.log(`Listening on port ${port}`));
+app.post('/orionweather', postHandler);
+
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
+});
+
+function generateUuid() {
+  return Math.random().toString() +
+         Math.random().toString() +
+         Math.random().toString();
+}
+
+function ampqConnectionInit(error0, connection) {
+  if (error0) {
+    throw error0;
+  }
+  console.log("Connection to Rabbit MQ successful");
+  connectionVar = connection;
+  connectionVar.createChannel(function(error1, channel) {
+    if (error1) {
+      throw error1;
+    }
+    console.log("Channel created for Rabbit MQ");
+    channelVar = channel;
+  });
+}
+
+function ampqConnectionHandler(error0, connection) {
+  if (error0) {
+    respBody = {"error":"Could not create connection"};
+    console.log(respBody);
+    throw error0;
+  }
+  console.log("We have connection now",connection);
+  connectionVar = connection;
+}
+
+function ampqChannelHandler(error1, channel) {
+  if (error1) {
+    respBody = {"error":"Could not create channel"};
+    console.log(respBody);
+    // resp.json(respBody).status(500);
+    throw error1;
+  }
+  console.log("Channel Created now");
+  channelVar = channel;
+}
+
+async function postHandler(req, resp, next) {
+  let respBody;
+  // resp.header("Access-Control-Allow-Origin", "*");
+  console.log("Received POST request at orionweather");
+  console.log(req.body);
+  if(!connectionVar) {
+    amqp.connect('amqp://orionRabbit', ampqConnectionHandler);
+  }
+  if(!channelVar) {
+    connectionVar.createChannel(ampqChannelHandler);
+  }
+
+  channelVar.assertQueue('gateway_rx', {
+    exclusive: false
+  }, function(error2, q) {
+    if (error2) {
+      respBody = {"error":"Could not connect to queue to send message"};
+      console.log(respBody);
+      throw error2;
+    }
+    console.log("gateway_rx channel association successful");
+    var correlationId = generateUuid();
+    correlationIds.push(correlationId);
+    let stringData = JSON.stringify(req.body);
+    console.log("This is how it's getting sent: ",stringData);
+    channelVar.sendToQueue('ingestor_rx',
+      Buffer.from(stringData),{
+        correlationId,
+        replyTo: "gateway_rx" });
+  });
+  var nLog;
+  channelVar.consume("gateway_rx", function(msg) {
+    let correlationRecv = msg.properties.correlationId;
+    if (correlationIds.indexOf(correlationRecv)>-1) {
+      correlationIds.filter(function(value, index, arr){ 
+        return value != correlationRecv;
+      });
+      nLog = JSON.parse(msg.content.toString());
+      console.log(' [.] Received from queue: ', nLog);
+      respList.push(nLog);
+    }
+  }, {
+    noAck: false
+  });
+  await sleep(2000);
+  let val = respList.pop();
+  console.log(val);
+  resp.json(val).status(200).send();
+  return;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 module.exports = app;

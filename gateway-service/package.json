@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "amqplib": "^0.8.0",
     "axios": "^0.25.0",
     "body-parser": "^1.19.1",
     "cookie-parser": "~1.4.4",
