@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 @Entity
 public class RequestEntry {
 
-
 	String userEmail;
     String date;
     String time;
