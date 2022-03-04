@@ -17,7 +17,7 @@ amqp.connect('amqp://orionRabbit', ampqConnectionInit);
 var app = express();
 
 app.use(cors({ credentials: true,
-  origin: "http://localhost:3002",
+  origin: "http://orionUI:3002",
     }));
 
 // var index = require('./routes/index');
@@ -115,7 +115,7 @@ async function postHandler(req, resp, next) {
     connectionVar.createChannel(ampqChannelHandler);
   }
 
-  channelVar.assertQueue('gateway_rx', {
+  channelVar.assertQueue('ingestor_tx', {
     exclusive: false
   }, function(error2, q) {
     if (error2) {
@@ -123,7 +123,7 @@ async function postHandler(req, resp, next) {
       console.log(respBody);
       throw error2;
     }
-    console.log("gateway_rx channel association successful");
+    console.log("ingestor_tx channel association successful");
     var correlationId = generateUuid();
     correlationIds.push(correlationId);
     let stringData = JSON.stringify(req.body);
@@ -131,10 +131,10 @@ async function postHandler(req, resp, next) {
     channelVar.sendToQueue('ingestor_rx',
       Buffer.from(stringData),{
         correlationId,
-        replyTo: "gateway_rx" });
+        replyTo: "ingestor_tx" });
   });
   var nLog;
-  channelVar.consume("gateway_rx", function(msg) {
+  channelVar.consume('ingestor_tx', function(msg) {
     let correlationRecv = msg.properties.correlationId;
     if (correlationIds.indexOf(correlationRecv)>-1) {
       correlationIds.filter(function(value, index, arr){ 
@@ -145,12 +145,52 @@ async function postHandler(req, resp, next) {
       respList.push(nLog);
     }
   }, {
-    noAck: false
+    noAck: true
   });
+
   await sleep(2000);
   let val = respList.pop();
   console.log(val);
-  resp.json(val).status(200).send();
+
+  channelVar.assertQueue('plot_tx', {
+    exclusive: false
+  }, function(error2, q) {
+    if (error2) {
+      respBody = {"error":"Could not connect to queue to send message"};
+      console.log(respBody);
+      throw error2;
+    }
+    console.log("plot_tx channel association successful");
+    var correlationId = generateUuid();
+    correlationIds.push(correlationId);
+    let stringData = JSON.stringify(val);
+    console.log("This is how it's getting sent to plot: ",stringData);
+    channelVar.sendToQueue('plot_rx',
+      Buffer.from(stringData),{
+        correlationId,
+        replyTo: "plot_tx" });
+  });
+
+  channelVar.consume("plot_tx", function(msg) {
+    let correlationRecv = msg.properties.correlationId;
+    if (correlationIds.indexOf(correlationRecv)>-1) {
+      correlationIds.filter(function(value, index, arr){ 
+        return value != correlationRecv;
+      });
+      nLog = JSON.parse(msg.content.toString());
+      console.log(' [.] Received from queue: ', nLog);
+      respList.push(nLog);
+      
+    }
+  }, {
+    noAck: true
+  });
+
+  await sleep(20000);
+  let val2 = respList.pop();
+  console.log(val2);
+
+  resp.json(val2).status(200).send();
   return;
 }
 
