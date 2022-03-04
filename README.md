@@ -34,6 +34,21 @@ docker run -d --name adsA1-plot -p 8000:8000 plot
 
 **NOTE:** This microservice runs at PORT number **`8000`**
 
+### Build from Source
+
+
+Please pull the repository and run the following commands:
+```
+git clone https://github.com/airavata-courses/orion
+cd orion
+git checkout a1-data-ingestor-release
+cd plot-weather-microservice
+```
+
+```
+python3 manage.py runserver
+```
+
 ## Data Ingestor Microservice
 
 Following are the steps for running the microservice:
@@ -103,6 +118,9 @@ docker build --tag orion-registry .
 
 docker run -d -it --network registry_network --name adsA2-registry -p 8091:8091 orion-registry
 ```
+Since this microservice has external dependencies (MySQL), please refer its standalone README [here](https://github.com/airavata-courses/orion/blob/a1-registry-release/registry-service/README.md)
+
+**NOTE:** This microservice runs at PORT number **`8091`**
 
 
 ## UI Microservice
