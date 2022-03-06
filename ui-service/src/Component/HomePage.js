@@ -22,7 +22,7 @@ export default function HomePage(userData){
     const [time, setTime] = useState();
     const [datacenter, setDataCenter] = useState();
    
-    const [response, setResponse] = useState([]);
+    const [response, setResponse] = useState();
 
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:4000");
@@ -35,8 +35,8 @@ export default function HomePage(userData){
     const formSubmit = async e => {
         if(e) e.preventDefault();
         res = await sendData({date,time,datacenter,userEmail});
-        setResponse(res);
-        console.log(response);                                        
+        //setResponse(res);
+        //console.log(response);                                        
     }
 
     // const {handleChange, values,errors,handleSubmit } = useForm(formSubmit);
@@ -66,7 +66,7 @@ export default function HomePage(userData){
             </form>
             {
                 // response.map(e1=>
-                    <img src={`data:image/png;base64,${response}`} alt="Plot" key={response}/>//)
+                    response && <img src={`data:image/png;base64,${response}`} key={response}/>//)
             }
         </div> 
         );

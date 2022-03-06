@@ -64,7 +64,7 @@ def process_req(request):
     plt = createGraph(fname)
     flike = io.BytesIO()
     plt.savefig(flike)
-    b64.append(base64.b64encode(flike.getvalue()).decode())
+    #b64.append(base64.b64encode(flike.getvalue()).decode())
 
     """resp = {
         'id':json_data['entryId'],
@@ -75,7 +75,7 @@ def process_req(request):
 
     #return Response(resp)
     #Remove this line if not required
-    return b64
+    return base64.b64encode(flike.getvalue()).decode()
 
     # subscribe a callback function to the queue. This callback function is called by the pika library
     # It does the work and sends the response back.
