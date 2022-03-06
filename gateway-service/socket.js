@@ -12,5 +12,9 @@ module.exports.initWS = (wss) => {
     
         //send immediatly a feedback to the incoming connection    
         ws.send('Hi there, I am a WebSocket server');
+
+        return (message) => {
+            ws.send(message)
+        }
     });
 }
