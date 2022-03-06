@@ -23,7 +23,7 @@ const port = 4000;
 
 app.use(cors({
   credentials: true,
-  origin: "*",
+  origin: "http://localhost:3002",
 }));
 
 // var index = require('./routes/index');
@@ -151,6 +151,7 @@ wss.on('connection', (ws) => {
       console.log("ingestor_tx channel association successful");
       var correlationId = generateUuid();
       correlationIds.push(correlationId);
+      resp.json({"correlationId":correlationId}).send();
       let stringData = JSON.stringify(req.body);
       console.log("This is how it's getting sent: ", stringData);
       channelVar.sendToQueue('ingestor_rx',
@@ -159,6 +160,7 @@ wss.on('connection', (ws) => {
         replyTo: "ingestor_tx"
       });
     });
+
     var nLog;
     channelVar.consume('ingestor_tx', function (msg) {
       let correlationRecv = msg.properties.correlationId;
@@ -169,59 +171,66 @@ wss.on('connection', (ws) => {
         nLog = JSON.parse(msg.content.toString());
         console.log(' [.] Received from queue: ', nLog);
         respList.push(nLog);
+        // ws.send(JSON.stringify(nLog));
+        channelVar.assertQueue('plot_tx', {
+          exclusive: false
+        }, function (error2, q) {
+          if (error2) {
+            respBody = { "error": "Could not connect to queue to send message" };
+            console.log(respBody);
+            throw error2;
+          }
+          console.log("plot_tx channel association successful");
+          var correlationId = generateUuid();
+          correlationIds.push(correlationId);
+          let stringData = JSON.stringify(nLog);
+          console.log("This is how it's getting sent to plot: ", stringData);
+          channelVar.sendToQueue('plot_rx',
+            Buffer.from(stringData), {
+            correlationId,
+            replyTo: "plot_tx"
+          });
+        });
+
+        var mLog;
+        channelVar.consume("plot_tx", function (msg) {
+          let correlationRecv = msg.properties.correlationId;
+          if (correlationIds.indexOf(correlationRecv) > -1) {
+            correlationIds.filter(function (value, index, arr) {
+              return value != correlationRecv;
+            });
+
+            console.log(' [.] Received from plot queue: ', msg.content.toString());
+            // mLog = JSON.parse(msg.content.toString());
+            // console.log(' [.] Received from plot queue: ', mLog);
+
+            // respList.push(mLog);
+
+            // console.log("Resp list:",JSON.stringify(respList))
+
+            ws.send(msg.content.toString());
+
+          }
+        }
+        , {
+          noAck: true
+        });
       }
     }, {
       noAck: true
     });
 
-    await sleep(2000);
-    let val = respList.pop();
-    console.log("I am here",val);
+    // await sleep(2000);
+    // let val = respList.pop();
+    // console.log("I am here",val);
 
-    resp.json(val).status(200).send();
-    channelVar.assertQueue('plot_tx', {
-      exclusive: false
-    }, function (error2, q) {
-      if (error2) {
-        respBody = { "error": "Could not connect to queue to send message" };
-        console.log(respBody);
-        throw error2;
-      }
-      console.log("plot_tx channel association successful");
-      var correlationId = generateUuid();
-      correlationIds.push(correlationId);
-      let stringData = JSON.stringify(val);
-      console.log("This is how it's getting sent to plot: ", stringData);
-      channelVar.sendToQueue('plot_rx',
-        Buffer.from(stringData), {
-        correlationId,
-        replyTo: "plot_tx"
-      });
-    });
+    // resp.json(val).status(200).send();
+    
+    
 
-    channelVar.consume("plot_tx", function (msg) {
-      let correlationRecv = msg.properties.correlationId;
-      if (correlationIds.indexOf(correlationRecv) > -1) {
-        correlationIds.filter(function (value, index, arr) {
-          return value != correlationRecv;
-        });
-        nLog = JSON.parse(msg.content.toString());
-        console.log(' [.] Received from plot queue: ', nLog);
-        respList.push(nLog);
-
-        console.log("Resp list:",JSON.stringify(respList))
-
-        ws.send(JSON.stringify(respList))
-
-      }
-    }
-    , {
-      noAck: true
-    });
-
-    await sleep(20000);
-    let val2 = respList.pop();
-    console.log(val2);
+    // await sleep(20000);
+    // let val2 = respList.pop();
+    // console.log(val2);
 
     return;
   }

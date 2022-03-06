@@ -4,6 +4,9 @@ export const initWS = (ws, setResponse) => {
     };
     
     ws.onmessage = function (event) {
-        console.log("Hello")
+        console.log(event.data)
+        if(event.data.toString().length>100) {
+            setResponse(event.data.toString());
+        }
     };    
 }

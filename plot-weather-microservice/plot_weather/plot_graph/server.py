@@ -58,13 +58,13 @@ def process_req(request):
     json_data = json.loads(request)
     print(json_data)
     #uri = json_data['uri']
-    for i in range(len(json_data)):
-        fname = json_data[i]
-        print(fname)
-        plt = createGraph(fname)
-        flike = io.BytesIO()
-        plt.savefig(flike)
-        b64.append(base64.b64encode(flike.getvalue()).decode())
+    # for i in range(len(json_data)):
+    fname = json_data[0]
+    print(fname)
+    plt = createGraph(fname)
+    flike = io.BytesIO()
+    plt.savefig(flike)
+    b64.append(base64.b64encode(flike.getvalue()).decode())
 
     """resp = {
         'id':json_data['entryId'],

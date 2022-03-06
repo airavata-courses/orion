@@ -65,8 +65,8 @@ export default function HomePage(userData){
                  <button type="submit" align="center" >Diagnose Current Atmospheric Conditions </button>
             </form>
             {
-                response.map(e1=>
-                    <img src={`data:image/png;base64,${e1}`} alt="Plot" key={e1}/>)
+                // response.map(e1=>
+                    <img src={`data:image/png;base64,${response}`} alt="Plot" key={response}/>//)
             }
         </div> 
         );
