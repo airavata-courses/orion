@@ -87,9 +87,7 @@ wss.on('connection', (ws) => {
   });
 
   function generateUuid() {
-    return Math.random().toString() +
-      Math.random().toString() +
-      Math.random().toString();
+    return Date.now().valueOf().toString();
   }
 
   function ampqConnectionInit(error0, connection) {
@@ -139,17 +137,21 @@ wss.on('connection', (ws) => {
     if (!channelVar) {
       connectionVar.createChannel(ampqChannelHandler);
     }
-
-    channelVar.assertQueue('ingestor_tx', {
-      exclusive: false
+    channelVar.assertQueue('plot_tx', {
+      exclusive: false,
+      durable: false
+    });
+    channelVar.assertQueue('plot_rx', {
+      exclusive: false,
+      durable: false
     }, function (error2, q) {
       if (error2) {
         respBody = { "error": "Could not connect to queue to send message" };
         console.log(respBody);
         throw error2;
       }
-      console.log("ingestor_tx channel association successful");
-      var correlationId = generateUuid();
+      console.log("plot_rx channel association successful");
+      var correlationId = generateUuid(req.body.userEmail);
       correlationIds.push(correlationId);
       resp.json({"correlationId":correlationId}).send();
       let stringData = JSON.stringify(req.body);
@@ -157,40 +159,40 @@ wss.on('connection', (ws) => {
       channelVar.sendToQueue('ingestor_rx',
         Buffer.from(stringData), {
         correlationId,
-        replyTo: "ingestor_tx"
+        replyTo: "plot_rx"
       });
     });
 
-    var nLog;
-    channelVar.consume('ingestor_tx', function (msg) {
-      let correlationRecv = msg.properties.correlationId;
-      if (correlationIds.indexOf(correlationRecv) > -1) {
-        correlationIds.filter(function (value, index, arr) {
-          return value != correlationRecv;
-        });
-        nLog = JSON.parse(msg.content.toString());
-        console.log(' [.] Received from queue: ', nLog);
-        respList.push(nLog);
-        // ws.send(JSON.stringify(nLog));
-        channelVar.assertQueue('plot_tx', {
-          exclusive: false
-        }, function (error2, q) {
-          if (error2) {
-            respBody = { "error": "Could not connect to queue to send message" };
-            console.log(respBody);
-            throw error2;
-          }
-          console.log("plot_tx channel association successful");
-          var correlationId = generateUuid();
-          correlationIds.push(correlationId);
-          let stringData = JSON.stringify(nLog);
-          console.log("This is how it's getting sent to plot: ", stringData);
-          channelVar.sendToQueue('plot_rx',
-            Buffer.from(stringData), {
-            correlationId,
-            replyTo: "plot_tx"
-          });
-        });
+    // var nLog;
+    // channelVar.consume('ingestor_tx', function (msg) {
+    //   let correlationRecv = msg.properties.correlationId;
+    //   if (correlationIds.indexOf(correlationRecv) > -1) {
+    //     correlationIds.filter(function (value, index, arr) {
+    //       return value != correlationRecv;
+    //     });
+    //     nLog = JSON.parse(msg.content.toString());
+    //     console.log(' [.] Received from queue: ', nLog);
+    //     respList.push(nLog);
+    //     // ws.send(JSON.stringify(nLog));
+    //     channelVar.assertQueue('plot_tx', {
+    //       exclusive: false
+    //     }, function (error2, q) {
+    //       if (error2) {
+    //         respBody = { "error": "Could not connect to queue to send message" };
+    //         console.log(respBody);
+    //         throw error2;
+    //       }
+    //       console.log("plot_tx channel association successful");
+    //       var correlationId = generateUuid();
+    //       correlationIds.push(correlationId);
+    //       let stringData = JSON.stringify(nLog);
+    //       console.log("This is how it's getting sent to plot: ", stringData);
+    //       channelVar.sendToQueue('plot_rx',
+    //         Buffer.from(stringData), {
+    //         correlationId,
+    //         replyTo: "plot_tx"
+    //       });
+    //     });
 
         var mLog;
         channelVar.consume("plot_tx", function (msg) {
@@ -215,10 +217,10 @@ wss.on('connection', (ws) => {
         , {
           noAck: true
         });
-      }
-    }, {
-      noAck: true
-    });
+    //   }
+    // }, {
+    //   noAck: true
+    // });
 
     // await sleep(2000);
     // let val = respList.pop();
