@@ -11,6 +11,9 @@ COPY ./requirements.txt /plot-weather-microservices/requirements.txt
 RUN pip install netCDF4
 
 #
+RUN pip install pooch
+
+#
 RUN pip install arm-pyart
 
 #

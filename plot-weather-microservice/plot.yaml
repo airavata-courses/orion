@@ -29,7 +29,7 @@ metadata:
 spec:
   selector:
     app: orion-plot
-  type: LoadBalancer
+  type: NodePort
   ports:
     - protocol: TCP
       port: 8000

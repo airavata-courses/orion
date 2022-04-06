@@ -5,7 +5,7 @@ import { initWS } from '../websocket-client.js';
 
 // post request to gateway/ingester
 async function sendData(data) {
-    return fetch('http://localhost:4000/orionweather', {
+    return fetch('http://149.165.155.203:30001/orionweather', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -25,17 +25,18 @@ export default function HomePage(userData){
     const [response, setResponse] = useState([]);
 
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:4000");
+        const ws = new WebSocket("ws://149.165.155.203:30001");
         initWS(ws, setResponse)
     }, [])
 
     var res = []
-    var userEmail = userData["useremail"]
+    //var userEmail = userData["useremail"]
     // response from the backend 
     const formSubmit = async e => {
         if(e) e.preventDefault();
-        res = await sendData({date,time,datacenter,userEmail});
-        setResponse(res);
+        //res = await sendData({date,time,datacenter,userEmail});
+        res = await sendData({date,time,datacenter});
+	setResponse(res);
         console.log(response);                                        
     }
 

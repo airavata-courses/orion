@@ -29,8 +29,9 @@ metadata:
 spec:
   selector:
     app: orion-gateway
-  type: LoadBalancer
+  type: NodePort
   ports:
     - protocol: TCP
       port: 4000
       targetPort: 4000
+      nodePort: 30001

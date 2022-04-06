@@ -1,3 +1,4 @@
+
 import pika, sys, os
 import gzip
 from locale import CODESET
@@ -13,12 +14,15 @@ import io
 import pytz
 from matplotlib import pyplot as plt
 from rest_framework.utils import json
+import logging
 
+logger = logging.getLogger('django')
 # from .views import PlotAPIView
  # establish connection with rabbitmq server 
-connection = pika.BlockingConnection(pika.ConnectionParameters('orionRabbit'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('orion-rabbit'))
 channel = connection.channel()
-print(" Connected to RBmq server")
+#print(" Connected to RBmq server")
+logger.info('Connected to the RBmq server')
 
 #create/ declare queue
 channel.queue_declare(queue='plot_rx')
@@ -83,7 +87,8 @@ def on_request(ch, method, props, body):
     # our message content will be in body 
     # n = int(body) 
 
-    print(" [.] Received this data %s", body)
+    #print(" [.] Received this data %s", body)
+    logger.info(' [.] Received this data %s', body)
 
     # instead of fib here our plot graph function should be called and response should be saved here 
     # response = fib(n) 
@@ -101,7 +106,8 @@ channel.basic_qos(prefetch_count=1)
 # We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
 channel.basic_consume(queue='plot_rx', on_message_callback=on_request)
 
-print(" [x] Awaiting RPC requests")
+#print(" [x] Awaiting RPC requests")
+logger.info(' [x] Awaiting RPC requests')
 channel.start_consuming()
 channel.close()
 

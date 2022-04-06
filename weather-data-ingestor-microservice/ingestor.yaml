@@ -29,7 +29,7 @@ metadata:
 spec:
   selector:
     app: orion-ingestor
-  type: LoadBalancer
+  type: NodePort
   ports:
     - protocol: TCP
       port: 3001
