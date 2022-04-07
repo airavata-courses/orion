@@ -2,27 +2,28 @@ import React, { useState, useEffect } from 'react';
 import useForm from '../utils/useForm';
 import { initWS } from '../websocket-client.js';
 
+import { ToggleSwitch } from './ToggleSwitch'
 
 // post request to gateway/ingester
-async function sendData(data) {
+async function sendData(data, format) {
     // return fetch('http://149.165.155.203:30001/nexrad', {
-    return fetch('http://localhost:4000/nexrad', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
+    return fetch(`http://localhost:4000/${format ? 'nexRad' : 'merra'}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
     })
-      .then(data => data.json())
-   }
+}
 
 
-export default function HomePage(userData){
-   
+export default function HomePage(userData) {
+
     const [date, setDate] = useState();
     const [time, setTime] = useState();
     const [datacenter, setDataCenter] = useState();
-   
+    const [format, setFormat] = useState(true);
+
     const [response, setResponse] = useState([]);
 
     useEffect(() => {
@@ -35,41 +36,57 @@ export default function HomePage(userData){
     //var userEmail = userData["useremail"]
     // response from the backend 
     const formSubmit = async e => {
-        if(e) e.preventDefault();
+        if (e) e.preventDefault();
         //res = await sendData({date,time,datacenter,userEmail});
-        res = await sendData({date,time,datacenter});
-	setResponse(res);
-        console.log(response);                                        
+        res = await sendData({ date, time, datacenter }, format);
+        setResponse(res);
+        console.log(response);
     }
 
     // const {handleChange, values,errors,handleSubmit } = useForm(formSubmit);
-        return(
+    return (
         <div >
+
             <h1>View Current Atmospheric Conditions</h1>
-            <form onSubmit={formSubmit}>
-                <label>
-                    <p><strong>Date</strong></p>
-                    <input type="date" id="date" onChange={e => setDate(e.target.value)} />
-                    {/* <input type="date" name="date" onChange={handleChange} />  */}
-
-                </label>
-                <label>
-                    <p><strong>Time</strong></p>
-                    <input type="time" id="time" onChange={e => setTime(e.target.value)}/>
-                    {/* <input type="time" name="time" onChange={handleChange} />  */}
-
-                </label>
-                <label>
-                    <p><strong>NEXRAD Center</strong></p>
-                    <input type="text" id="datacenter" onChange={e => setDataCenter(e.target.value)}/>
-                    {/* <input type="text" name="datacenter" onChange={handleChange} />  */}
-
-                </label>
-                 <button type="submit" align="center" >Diagnose Current Atmospheric Conditions </button>
-            </form>
+            {/* <div class="storybook">
+            	<div id="storybook"></div>
+            </div> */}
+            <ToggleSwitch format={format} setFormat={setFormat} />
             {
-                response && <img src={`data:image/png;base64,${response}`} key={response}/>//)
+                format ? (
+                    <form onSubmit={formSubmit}>
+                        <label>
+                            <p><strong>Date</strong></p>
+                            <input type="date" id="date" onChange={e => setDate(e.target.value)} />
+                            {/* <input type="date" name="date" onChange={handleChange} />  */}
+
+                        </label>
+                        <label>
+                            <p><strong>Time</strong></p>
+                            <input type="time" id="time" onChange={e => setTime(e.target.value)} />
+
+                        </label>
+                        <label>
+                            <p><strong>NEXRAD Center</strong></p>
+                            <input type="text" id="datacenter" onChange={e => setDataCenter(e.target.value)} />
+
+                        </label>
+                        <button type="submit" align="center" >Diagnose Current Atmospheric Conditions </button>
+                    </form>
+                ) : (
+                    <form onSubmit={formSubmit}>
+                        <label>
+                            <p><strong>Date</strong></p>
+                            <input type="date" id="date" onChange={e => setDate(e.target.value)} />
+                            {/* <input type="date" name="date" onChange={handleChange} />  */}
+
+                        </label>
+                    </form>
+                )
             }
-        </div> 
-        );
-        }
+            {
+                response && <img src={`data:image/png;base64,${response}`} key={response} />
+            }
+        </div>
+    );
+}

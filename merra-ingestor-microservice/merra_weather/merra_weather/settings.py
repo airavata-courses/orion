@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'plot_weather.urls'
+ROOT_URLCONF = 'merra_weather.urls'
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'plot_weather.wsgi.application'
+WSGI_APPLICATION = 'merra_weather.wsgi.application'
 
 
 # Database

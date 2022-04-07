@@ -1,0 +1,92 @@
+
+.storybook {
+	width: 100%;
+	color: #83b8ee;
+	height: 100%;
+	
+	display: flex;
+  justify-content: center;
+  align-items: center;
+	flex-flow: column;
+	text-align: center;
+}
+
+#storybook {
+	display: block;
+}
+
+.ToggleSwitch {
+	position: relative;
+	width: 5rem;
+	height: 2.35rem;
+	display: inline-block;
+	
+	&.ToggleSwitch__rounded {
+		.Slider {
+			border-radius: 15rem;
+			background: #eceff1;
+			border: 3px solid #A0A0A0;
+			
+			&:before {
+				border-radius: 50%;
+			}
+		}
+	}
+
+	.ToggleSwitch__text {
+		position: relative;
+		top: 0.4rem;
+		left: 0.9rem;
+		opacity: 1;
+		color: #fffb;
+		transition: transform 0.5s ease 0s, opacity 0.5s ease 0.5s;
+				&.isMoved {
+					// transform:
+				left: -0.9em;
+				opacity: 1;
+			}
+	}
+	
+	.ToggleSwitch__wrapper {
+		position: relative;
+		width: 8rem;
+		height: 2.35rem;
+		
+		.Slider {
+			position: absolute;
+			cursor: pointer;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+							background: #5a5b;
+
+			transition: .4s ease;
+			
+			&:before {
+				width: 2.5rem;
+				height: 2.5rem;
+				position: absolute;
+				background: #55a;
+				content: '';
+				margin: 0;
+				padding: 0;
+				top: 50%;
+				left: -0.2rem;
+				transform: translateY(-50%);
+				transition: .4s;
+				cursor: pointer;
+				box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+			}
+			
+			&.isChecked {
+				background: #55ab;
+				
+				&:before {
+					left: calc(100% + 0.10rem - 2.45rem);
+					background: #5a5;
+				}
+			}
+		}
+	}
+}
