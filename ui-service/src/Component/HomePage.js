@@ -5,7 +5,8 @@ import { initWS } from '../websocket-client.js';
 
 // post request to gateway/ingester
 async function sendData(data) {
-    return fetch('http://149.165.155.203:30001/orionweather', {
+    // return fetch('http://149.165.155.203:30001/nexrad', {
+    return fetch('http://localhost:4000/nexrad', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -25,7 +26,8 @@ export default function HomePage(userData){
     const [response, setResponse] = useState([]);
 
     useEffect(() => {
-        const ws = new WebSocket("ws://149.165.155.203:30001");
+        // const ws = new WebSocket("ws://149.165.155.203:30001");
+        const ws = new WebSocket("ws://localhost:4000");
         initWS(ws, setResponse)
     }, [])
 
@@ -66,8 +68,7 @@ export default function HomePage(userData){
                  <button type="submit" align="center" >Diagnose Current Atmospheric Conditions </button>
             </form>
             {
-                response.map(e1=>
-                    <img src={`data:image/png;base64,${e1}`} alt="Plot" key={e1}/>)
+                response && <img src={`data:image/png;base64,${response}`} key={response}/>//)
             }
         </div> 
         );
