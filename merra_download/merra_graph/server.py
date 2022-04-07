@@ -27,7 +27,7 @@ url = 'https://disc.gsfc.nasa.gov/service/subset/jsonwsp'
 ###################################################   RABBITMQ  CODE BEGINS    ###############################################################################
  
 # establish connection with rabbitmq server 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('orionRabbit'))
 channel = connection.channel()
 print(" Connected to RBmq server")
 

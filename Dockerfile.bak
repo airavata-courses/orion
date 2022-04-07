@@ -10,6 +10,8 @@ COPY ./requirements.txt /merra-download-microservice/requirements.txt
 #
 RUN pip install netCDF4
 
+#
+#RUN pip install arm-pyart
 
 #
 RUN pip install --no-cache-dir --upgrade -r /merra-download-microservice/requirements.txt
