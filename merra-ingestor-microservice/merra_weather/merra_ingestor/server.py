@@ -15,6 +15,8 @@ from urllib.parse import urlencode
 import getpass
 import ssl
 import logging
+import os
+
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -241,22 +243,37 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     DataResponse = urllib.request.urlopen(DataRequest)
     DataBody = DataResponse.read()
 
-    response = {}
+    """response = {}
     response['fileName'] = urls[0]['label']
-    response['dataBody'] = DataBody
-    # # Save file to working directory
-    # try:
-    #     file_name = item['label']
-    #     file_ = open('data-files/'+file_name, 'wb')
-    #     file_.write(DataBody)
-    #     file_.close()
-    #     print (file_name, " is downloaded")
-    # except requests.exceptions.HTTPError as e:
-    #     print(e)
+    response['dataBody'] = DataBody"""
 
-    # print('Downloading is done and find the downloaded files in your current working directory')
-    #logger.info("response from download:",response['fileName'])
-    logger.info("type of response:",type(response))
+    response = {}
+    dirName='test'
+    path='../../'
+    if not os.path.isdir(dirName):
+        print('The directory is not present. Creating a new one..')
+        logger.info('Current Working Directory: ',os.getcwd())
+        os.chdir(path)
+        os.mkdir(dirName)
+        logger.info('Current Working Directory after directory change : ', os.getcwd())
+
+
+    else:
+        print('The directory is present.')
+    # Save file to working directory
+    try:
+        file_name = urls[0]['label']
+        file_ = open(dirName+'/'+file_name, 'wb')
+        file_.write(DataBody)
+        file_.close()
+        print (file_name, " is downloaded")
+    except requests.exceptions.HTTPError as e:
+        print('Exception occured : '+e)
+
+    print('Downloading is done and find the downloaded files in your current working directory')
+    # logger.info("response from download:",response['fileName'])
+    # logger.info("type of response:",type(response))
+    response['fileName'] = path+dirName
     return response
 
 #unpack the data in message and process the message and return the output
@@ -272,7 +289,7 @@ def process_req(request):
     maxLongitude = json_data['maxLongitude']
     date = json_data['merraDate']
     urls=downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, maxLongitude, date)
-    logger.info("type of urls:",type(urls))
+    # logger.info("type of urls:",type(urls))
     #logger.info("urls:",urls['fileName'])
     return urls
 
@@ -284,7 +301,7 @@ def on_request(ch, method, props, body):
     logger.info("Response: ",response['fileName'])
 
     #logger.info("Reply to queue: ",props.reply_to)
-    logger.info("type of body",type(response))
+    # logger.info("type of body",type(response))
     ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=json.dumps(response))
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
