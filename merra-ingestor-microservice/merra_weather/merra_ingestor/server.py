@@ -256,6 +256,7 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
 
     # print('Downloading is done and find the downloaded files in your current working directory')
     #logger.info("response from download:",response['fileName'])
+    logger.info("type of response:",type(response))
     return response
 
 #unpack the data in message and process the message and return the output
@@ -271,18 +272,20 @@ def process_req(request):
     maxLongitude = json_data['maxLongitude']
     date = json_data['merraDate']
     urls=downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, maxLongitude, date)
+    logger.info("type of urls:",type(urls))
     #logger.info("urls:",urls['fileName'])
     return urls
 
 #callback function for the queue 
 def on_request(ch, method, props, body):
-    logger.info(" [.] Received this data %s", body) 
+    #logger.info(" [.] Received this data %s", body) 
 
     response = process_req(body)
     logger.info("Response: ",response['fileName'])
 
-    logger.info("Reply to queue: ",props.reply_to)
-    ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=str(response))
+    #logger.info("Reply to queue: ",props.reply_to)
+    logger.info("type of body",type(response))
+    ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=json.dumps(response))
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 # We might want to run more than one server process. 

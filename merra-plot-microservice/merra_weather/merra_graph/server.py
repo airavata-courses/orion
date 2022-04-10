@@ -7,55 +7,41 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import io
+import logging
 
 ###################################################   RABBITMQ  CODE BEGINS    ###############################################################################
 
 #Rabbitmq 
 # establish connection with rabbitmq server 
+logger = logging.getLogger('django')
 connection = pika.BlockingConnection(pika.ConnectionParameters('orionRabbit'))
 channel = connection.channel()
-print(" Connected to RBmq server")
+logger.info(" Connected to RBmq server")
 
 #create/ declare queue
 channel.queue_declare(queue='merra_plot_rx')
 
-#callback function for the queue 
-def on_request(ch, method, props, body):
-    print(" [.] Received this data %s", body)
-    response = process_req(body)
-    ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=str(response))
-    ch.basic_ack(delivery_tag=method.delivery_tag)
-
-# We might want to run more than one server process. 
-# In order to spread the load equally over multiple servers we need to set the prefetch_count setting.
-channel.basic_qos(prefetch_count=1)
-                
-# We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
-channel.basic_consume(queue='merra_plot_rx', on_message_callback=on_request)
-
-print(" [x] Awaiting RPC requests")
-channel.start_consuming()
-channel.close()
-
-###################################################   RABBITMQ  CODE ENDS    ###############################################################################
-
 def process_req(body):
     b64 = []
-    json_data = json.loads(body)
-    print(json_data)
+    logger.info("type of body:",type(body))
+    json_data1 = json.loads(body)
+    logger.info("Converted type:",type(json_data1))
+    json_data = json.dumps(body)
+    logger.info("Filename:",json_data['fileName'])
+    #logger.info(json_data)
     file_name = json_data['fileName']
     file_ = open('data-files/'+file_name, 'wb')
     file_.write(json_data['dataBody'])
     file_.close()
-    print (file_name, " is downloaded")
+    #logger.info(file_name, " is downloaded")
     
 
-    print('Downloading is done and find the downloaded files in your current working directory')
+    logger.info('Downloading is done and find the downloaded files in your current working directory')
     #Read in NetCDF4 file (add a directory path if necessary):
     data = Dataset(file_name, mode='r')
 
     # Run the following line below to print MERRA-2 metadata. This line will print attribute and variable information. From the 'variables(dimensions)' list, choose which variable(s) to read in below.
-    print(data)
+    #logger.info(data)
 
     # Read in the 'T2M' 2-meter air temperature variable:
     lons = data.variables['lon'][:]
@@ -66,7 +52,7 @@ def process_req(body):
     # Note: Changing T2M[0,:,:] to T2M[10,:,:] will subset to the 11th time index.
 
     T2M = T2M[0,0,:]
-    print(T2M)
+    #logger.info(T2M)
     # Plot the data using matplotlib and cartopy
 
     # Set the figure size, projection, and extent
@@ -90,4 +76,27 @@ def process_req(body):
 
     flike = io.BytesIO()
     plt.savefig(flike)
+    #logger.info(b64)
     b64.append(base64.b64encode(flike.getvalue()).decode())
+
+#callback function for the queue 
+def on_request(ch, method, props, body):
+    #logger.info(" [.] Received this data %s", body)
+    response = process_req(body)
+    ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+# We might want to run more than one server process. 
+# In order to spread the load equally over multiple servers we need to set the prefetch_count setting.
+channel.basic_qos(prefetch_count=1)
+                
+# We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
+channel.basic_consume(queue='merra_plot_rx', on_message_callback=on_request)
+
+logger.info(" [x] Awaiting RPC requests")
+channel.start_consuming()
+channel.close()
+
+###################################################   RABBITMQ  CODE ENDS    ###############################################################################
+
+
