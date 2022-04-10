@@ -24,15 +24,10 @@ channel.queue_declare(queue='merra_plot_rx')
 def process_req(body):
     b64 = []
     logger.info("type of body:",type(body))
-    json_data1 = json.loads(body)
-    logger.info("Converted type:",type(json_data1))
-    json_data = json.dumps(body)
+    json_data = json.loads(body)
     logger.info("Filename:",json_data['fileName'])
     #logger.info(json_data)
     file_name = json_data['fileName']
-    file_ = open('data-files/'+file_name, 'wb')
-    file_.write(json_data['dataBody'])
-    file_.close()
     #logger.info(file_name, " is downloaded")
     
 
