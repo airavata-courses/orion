@@ -14,6 +14,7 @@ import urllib.request
 from urllib.parse import urlencode
 import getpass
 import ssl
+import logging
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -27,104 +28,38 @@ url = 'https://disc.gsfc.nasa.gov/service/subset/jsonwsp'
 ###################################################   RABBITMQ  CODE BEGINS    ###############################################################################
  
 # establish connection with rabbitmq server 
+logger = logging.getLogger('django')
 connection = pika.BlockingConnection(pika.ConnectionParameters('orionRabbit'))
 channel = connection.channel()
-print(" Connected to RBmq server")
+logger.info(" Connected to RBmq server")
 
 #create/ declare queue
-channel.queue_declare(queue='merra_download_rx')
+channel.queue_declare(queue='merra_ingestor_rx')
 
-#callback function for the queue 
-def on_request(ch, method, props, body):
-    print(" [.] Received this data %s", body) 
+# definea a local general-purpose method that submits a JSON-formatted Web Services Protocol (WSP) request to the GES DISC server, checks for any errors, and then returns the response. 
+# This method is created for convenience as this task will be repeated more than once.
+# This method POSTs formatted JSON WSP requests to the GES DISC endpoint URL
+# It is created for convenience since this task will be repeated more than once
 
-    response = process_req(body)
-
-    ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=str(response))
-    ch.basic_ack(delivery_tag=method.delivery_tag)
-
-# We might want to run more than one server process. 
-# In order to spread the load equally over multiple servers we need to set the prefetch_count setting.
-channel.basic_qos(prefetch_count=1)
-                
-# We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
-channel.basic_consume(queue='merra_download_rx', on_message_callback=on_request)
-
-print(" [x] Awaiting RPC requests")
-channel.start_consuming()
-channel.close()
-
-
-###################################################   RABBITMQ  CODE ENDS    ###############################################################################
-
-
-#unpack the data in message and process the message and return the output
-def process_req(request):
-    
-    json_data = json.loads(request)
-    print(json_data)
-    username = json_data['username']
-    password = json_data['password']
-    minLatitude = json_data['minLatitude']
-    maxLatitude = json_data['maxLatitude']
-    minLongitude = json_data['minLongitude']
-    maxLongitude = json_data['maxLangitude']
-    date = json_data['date']
-    urls=downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, maxLongitude, date)
-    return urls
-
-
-
-# Login and Download merra data
-def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, maxLongitude, date):
-    
-    # Earthdata Login
-    username = 'teamOrion2022'
-    password = 'AdsSpring2022'
-
-    # Create a password manager to deal with the 401 response that is returned from
-    password_manager = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-    password_manager.add_password(None, "https://urs.earthdata.nasa.gov", username, password)
-
-    # Create a cookie jar for storing cookies. This is used to store and return the session cookie #given to use by the data server
-    cookie_jar = CookieJar()
-        
-    # Install all the handlers.
-    opener = urllib.request.build_opener (urllib.request.HTTPBasicAuthHandler (password_manager),urllib.request.HTTPCookieProcessor (cookie_jar))
-    urllib.request.install_opener(opener)
-        
-    # Open a request for the data, and download files
-    print('\n HTTP_services output:')
-    urls=constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLongitude, date)
-    
-    URL = urls['link'] 
-    print('URL : {}'.format(URL))
-    DataRequest = urllib.request.Request(URL)
-    DataResponse = urllib.request.urlopen(DataRequest)
-    DataBody = DataResponse.read()
-
-    response = {}
-    response['fileName'] = urls['label']
-    response['dataBody'] = DataBody
-    # # Save file to working directory
-    # try:
-    #     file_name = item['label']
-    #     file_ = open('data-files/'+file_name, 'wb')
-    #     file_.write(DataBody)
-    #     file_.close()
-    #     print (file_name, " is downloaded")
-    # except requests.exceptions.HTTPError as e:
-    #     print(e)
-
-    # print('Downloading is done and find the downloaded files in your current working directory')
-
+def get_http_data(request):
+    #logger.info('request',request['methodname'])
+    hdrs = {'Content-Type': 'application/json',
+            'Accept'      : 'application/json'}
+    data = json.dumps(request)
+    #logger.info('data:',data)
+    #logger.info("url",url)
+    r = http.request('POST', url, body=data, headers=hdrs)
+    response = json.loads(r.data)   
+    #logger.info('response:',response['type'])
+    # Check for errors
+    if response['type'] == 'jsonwsp/fault' :
+        logger.info('API Error: faulty %s request' % response['methodname'])
+        sys.exit(1)
     return response
-
-
 
 # The following method constructs the and returns the Subsetted records
 
-def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLangitude, date):
+def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLongitude, date):
 
     # Define the parameters for the data subset
     # product = 'M2I3NPASM_V5.12.4' 
@@ -144,16 +79,16 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLangitude, dat
 
     product = 'M2I3NPASM_V5.12.4' 
     varNames =['T']
-    minlon = minLatitude
-    maxlon = minLongitude
-    minlat = maxLangitude
-    maxlat = maxLatitude
+    minlat = int(minLatitude)
+    minlon = int(minLongitude)
+    maxlat = int(maxLatitude)
+    maxlon = int(maxLongitude)
     begTime = date
     endTime = date
     begHour = '00:00'
     endHour = '00:00'
 
-
+    #logger.info("Beg time:",begTime)
     # Subset only the mandatory pressure levels (units are hPa)
     # 1000 925 850 700 500 400 300 250 200 150 100 70 50 30 20 10 7 5 3 2 1 
     dimName = 'lev'
@@ -162,8 +97,8 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLangitude, dat
     dimSlice = []
     for i in range(len(dimVals)):
         dimSlice.append({'dimensionId': dimName, 'dimensionValue': dimVals[i]})
-
-
+    
+    #logger.info('dimSlice:',dimSlice)
 
     # Construct JSON WSP request for API method: subset
     subset_request = {
@@ -185,13 +120,13 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLangitude, dat
 
 
 
-
+    #logger.info("subset request:",subset_request['args']['box'])
     # Submit the subset request to the GES DISC Server
     response = get_http_data(subset_request)
     # Report the JobID and initial status
     myJobId = response['result']['jobId']
-    print('Job ID: '+myJobId)
-    print('Job status: '+response['result']['Status'])
+    #logger.info('Job ID: '+myJobId)
+    #logger.info('Job status: '+response['result']['Status'])
 
 
 
@@ -210,11 +145,11 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLangitude, dat
         response = get_http_data(status_request)
         status  = response['result']['Status']
         percent = response['result']['PercentCompleted']
-        print ('Job status: %s (%d%c complete)' % (status,percent,'%'))
+        #logger.info('Job status: %s (%d%c complete)' % (status,percent,'%'))
     if response['result']['Status'] == 'Succeeded' :
-        print ('Job Finished:  %s' % response['result']['message'])
+        logger.info('Job Finished:  %s' % response['result']['message'])
     else : 
-        print('Job Failed: %s' % response['fault']['code'])
+        logger.info('Job Failed: %s' % response['fault']['code'])
         sys.exit(1)
 
 
@@ -237,6 +172,7 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLangitude, dat
     # Add the results from this batch to the list and increment the count
     results = []
     count = 0 
+    #logger.info("result request:",results_request)
     response = get_http_data(results_request) 
     count = count + response['result']['itemsPerPage']
     results.extend(response['result']['items']) 
@@ -250,7 +186,7 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLangitude, dat
         results.extend(response['result']['items'])
         
     # Check on the bookkeeping
-    print('Retrieved %d out of %d expected items' % (len(results), total))
+    logger.info('Retrieved %d out of %d expected items' % (len(results), total))
 
 
 
@@ -270,25 +206,95 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLangitude, dat
     # print('\nDocumentation:')
     # for item in docs : print(item['label']+': '+item['link'])
 
-
+    #logger.info("urls from 1:",urls)
     return urls
 
 
+# Login and Download merra data
+def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, maxLongitude, date):
+    
+    # Earthdata Login
+    if not username:
+        username = 'teamorion2022'
+    if not password:
+        password = 'AdsSpring2022'
 
+    # Create a password manager to deal with the 401 response that is returned from
+    password_manager = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+    password_manager.add_password(None, "https://urs.earthdata.nasa.gov", username, password)
 
-# definea a local general-purpose method that submits a JSON-formatted Web Services Protocol (WSP) request to the GES DISC server, checks for any errors, and then returns the response. 
-# This method is created for convenience as this task will be repeated more than once.
-# This method POSTs formatted JSON WSP requests to the GES DISC endpoint URL
-# It is created for convenience since this task will be repeated more than once
+    # Create a cookie jar for storing cookies. This is used to store and return the session cookie #given to use by the data server
+    cookie_jar = CookieJar()
+        
+    # Install all the handlers.
+    opener = urllib.request.build_opener (urllib.request.HTTPBasicAuthHandler (password_manager),urllib.request.HTTPCookieProcessor (cookie_jar))
+    urllib.request.install_opener(opener)
+        
+    # Open a request for the data, and download files
+    #logger.info('\n HTTP_services output:')
+    urls=constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLongitude, date)
+    #logger.info(urls['link'])
+    
+    URL = urls[0]['link'] 
+    #logger.info('URL : {}'.format(URL))
+    DataRequest = urllib.request.Request(URL)
+    DataResponse = urllib.request.urlopen(DataRequest)
+    DataBody = DataResponse.read()
 
-def get_http_data(request):
-    hdrs = {'Content-Type': 'application/json',
-            'Accept'      : 'application/json'}
-    data = json.dumps(request)       
-    r = http.request('POST', url, body=data, headers=hdrs)
-    response = json.loads(r.data)   
-    # Check for errors
-    if response['type'] == 'jsonwsp/fault' :
-        print('API Error: faulty %s request' % response['methodname'])
-        sys.exit(1)
+    response = {}
+    response['fileName'] = urls[0]['label']
+    response['dataBody'] = DataBody
+    # # Save file to working directory
+    # try:
+    #     file_name = item['label']
+    #     file_ = open('data-files/'+file_name, 'wb')
+    #     file_.write(DataBody)
+    #     file_.close()
+    #     print (file_name, " is downloaded")
+    # except requests.exceptions.HTTPError as e:
+    #     print(e)
+
+    # print('Downloading is done and find the downloaded files in your current working directory')
+    #logger.info("response from download:",response['fileName'])
     return response
+
+#unpack the data in message and process the message and return the output
+def process_req(request):
+    
+    json_data = json.loads(request)
+    #logger.info(json_data)
+    username = json_data['username']
+    password = json_data['password']
+    minLatitude = json_data['minLatitude']
+    maxLatitude = json_data['maxLatitude']
+    minLongitude = json_data['minLongitude']
+    maxLongitude = json_data['maxLongitude']
+    date = json_data['merraDate']
+    urls=downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, maxLongitude, date)
+    #logger.info("urls:",urls['fileName'])
+    return urls
+
+#callback function for the queue 
+def on_request(ch, method, props, body):
+    logger.info(" [.] Received this data %s", body) 
+
+    response = process_req(body)
+    logger.info("Response: ",response['fileName'])
+
+    logger.info("Reply to queue: ",props.reply_to)
+    ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=str(response))
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+# We might want to run more than one server process. 
+# In order to spread the load equally over multiple servers we need to set the prefetch_count setting.
+channel.basic_qos(prefetch_count=1)
+                
+# We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
+channel.basic_consume(queue='merra_ingestor_rx', on_message_callback=on_request)
+
+logger.info(" [x] Awaiting RPC requests")
+channel.start_consuming()
+channel.close()
+
+
+###################################################   RABBITMQ  CODE ENDS    ###############################################################################
