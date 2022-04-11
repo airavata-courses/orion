@@ -32,7 +32,7 @@ export default function HomePage(userData) {
     const [maxLongitude, setMaxLongitude] = useState();
     const [merraDate, setMerraDate] = useState();
 
-    const [response, setResponse] = useState([]);
+    const [response, setResponse] = useState();
 
     useEffect(() => {
         // const ws = new WebSocket("ws://149.165.155.203:30001");
@@ -48,7 +48,7 @@ export default function HomePage(userData) {
         //res = await sendData({date,time,datacenter,userEmail});
         if (format) res = await sendData({ date, time, datacenter }, format);
         else res = await sendData({ username, password, minLatitude, maxLatitude, minLongitude, maxLongitude, merraDate}, format)
-        setResponse(res);
+        //setResponse(res);
         console.log(response);
     }
 
