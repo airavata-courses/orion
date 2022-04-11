@@ -195,12 +195,12 @@ wss.on("connection", (ws) => {
     if (!channelVar) {
       connectionVar.createChannel(ampqChannelHandler);
     }
-    channelVar.assertQueue("merra_plot_tx", {
+    channelVar.assertQueue("merra_plot_rx", {
       exclusive: false,
       durable: false,
     });
     channelVar.assertQueue(
-      "merra_plot_rx",
+      "merra_plot_tx",
       {
         exclusive: false,
         durable: false,
@@ -242,7 +242,8 @@ wss.on("connection", (ws) => {
           returnData["dataMode"] = "MERRA";
           returnData["response"] = msg.content.toString();
           // ws.send(msg.content.toString());
-          ws.send(returnData);
+          ws.send(msg.content.toString());
+          console.log(msg.content.toString(),"Sent as msg");
         }
       },
       {

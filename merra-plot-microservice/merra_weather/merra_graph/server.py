@@ -2,6 +2,7 @@
 #import the required Python libraries. If any of the following import commands fail check the local Python environment
 #and install any missing packages.
 #*************************************************************************************************************************import json
+import pathlib
 import pika
 import base64
 import numpy as np
@@ -245,14 +246,16 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     # Open a request for the data, and download files
     #logger.info('\n HTTP_services output:')
     urls=constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLongitude, date)
-    #logger.info(urls['link'])
+    # logger.info(urls['link'])
+    print("This is url stuff: {}".format(urls))
     # print('I am  also here 1')  
 
-    URL = urls[0]['link'] 
+    url = urls[0]['link'] 
     #logger.info('URL : {}'.format(URL))
     DataRequest = urllib.request.Request(url)
     DataResponse = urllib.request.urlopen(DataRequest)
     DataBody = DataResponse.read()
+    # print("This is dataBody: {}".format(DataBody))
     print('I am  also here 2')  
 
 
@@ -272,6 +275,7 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     # else:
     #     print('The directory is present.')
     # Save file to working directory
+    # print("File details: {}".format(urls))
     try:
         file_name = urls[0]['label']
         file_ = open(file_name, 'wb')
@@ -285,6 +289,7 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     # logger.info("response from download:",response['fileName'])
     # logger.info("type of response:",type(response))
     response['fileName'] =file_name
+    # response['data'] = DataBody
     return response
 
 #unpack the data in message and process the message and return the output
@@ -311,16 +316,22 @@ def plotsService(body):
     print("Filename:{}".format(body))
     # print("Path exists:{}".format(body))
     #logger.info(json_data)
-    file_name = body
-    print("Path exists:{}",os.path.exists(file_name))
+    file_name = body['fileName']
+    print("Path exists:{}".format(os.path.exists(file_name)))
 
     #logger.info(file_name, " is downloaded")
     
 
     print('Downloading is done and find the downloaded files in your current working directory')
     #Read in NetCDF4 file (add a directory path if necessary):
-    data = Dataset('MERRA2_400.inst3_3d_asm_Np.20180202.SUB.nc', mode='r')
-
+    # print("This is the path:{}".format(os.getcwd()+"/"+file_name))
+    # print("Files in current directory: {}".format(os.listdir(os.getcwd())))
+    # print("Files in root directory: {}".format(os.listdir("/")))
+    # print("Filename in str {}".format(str(file_name)))
+    # path2 = os.PathLike()
+    # print("This is path: {}".format(path2))
+    data = Dataset(file_name, mode='r')
+    # data = body['data']
     # Run the following line below to print MERRA-2 metadata. This line will print attribute and variable information. From the 'variables(dimensions)' list, choose which variable(s) to read in below.
     #logger.info(data)
 
@@ -359,6 +370,7 @@ def plotsService(body):
     plt.savefig(flike)
     #logger.info(b64)
     b64.append(base64.b64encode(flike.getvalue()).decode())
+    return b64
 
    
 ###################################################   RABBITMQ  CODE     ###############################################################################
@@ -369,7 +381,7 @@ def on_request(ch, method, props, body):
 
     response = process_req(body)
     print("Response:{} ".format(response['fileName']))
-    finalprocess=plotsService(response['fileName'])
+    finalprocess=plotsService(response)
 
     ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=json.dumps(finalprocess))
     ch.basic_ack(delivery_tag=method.delivery_tag)
