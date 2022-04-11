@@ -208,7 +208,7 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLongitude, dat
     # print('\nDocumentation:')
     # for item in docs : print(item['label']+': '+item['link'])
 
-    #logger.info("urls from 1:",urls)
+    print('Iam here')  
     return urls
 
 
@@ -236,12 +236,15 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     #logger.info('\n HTTP_services output:')
     urls=constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLongitude, date)
     #logger.info(urls['link'])
-    
+    print('I am  also here 1')  
+
     URL = urls[0]['link'] 
     #logger.info('URL : {}'.format(URL))
-    DataRequest = urllib.request.Request(URL)
+    DataRequest = urllib.request.Request(url)
     DataResponse = urllib.request.urlopen(DataRequest)
     DataBody = DataResponse.read()
+    print('I am  also here 2')  
+
 
     """response = {}
     response['fileName'] = urls[0]['label']
@@ -252,10 +255,10 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     path='../../'
     if not os.path.isdir(dirName):
         print('The directory is not present. Creating a new one..')
-        logger.info('Current Working Directory: ',os.getcwd())
+        print('Current Working Directory:{} '.format(os.getcwd()))
         os.chdir(path)
         os.mkdir(dirName)
-        logger.info('Current Working Directory after directory change : ', os.getcwd())
+        print('Current Working Directory after directory change :{} '.format( os.getcwd()))
 
 
     else:
@@ -268,12 +271,12 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
         file_.close()
         print (file_name, " is downloaded")
     except requests.exceptions.HTTPError as e:
-        print('Exception occured : '+e)
+        print('Exception occured : :{}'.format(e))
 
     print('Downloading is done and find the downloaded files in your current working directory')
     # logger.info("response from download:",response['fileName'])
     # logger.info("type of response:",type(response))
-    response['fileName'] = path+dirName
+    response['fileName'] = path+dirName+'/'+file_name
     return response
 
 #unpack the data in message and process the message and return the output
@@ -298,7 +301,7 @@ def on_request(ch, method, props, body):
     #logger.info(" [.] Received this data %s", body) 
 
     response = process_req(body)
-    logger.info("Response: ",response['fileName'])
+    print("Response:{} ".format(response['fileName']))
 
     #logger.info("Reply to queue: ",props.reply_to)
     # logger.info("type of body",type(response))
@@ -312,7 +315,7 @@ channel.basic_qos(prefetch_count=1)
 # We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
 channel.basic_consume(queue='merra_ingestor_rx', on_message_callback=on_request)
 
-logger.info(" [x] Awaiting RPC requests")
+print(" [x] Awaiting RPC requests")
 channel.start_consuming()
 channel.close()
 
