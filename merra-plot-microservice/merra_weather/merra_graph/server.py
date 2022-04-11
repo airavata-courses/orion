@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import io
 import logging
+import os.path
+
 
 ###################################################   RABBITMQ  CODE BEGINS    ###############################################################################
 
@@ -16,22 +18,25 @@ import logging
 logger = logging.getLogger('django')
 connection = pika.BlockingConnection(pika.ConnectionParameters('orionRabbit'))
 channel = connection.channel()
-logger.info(" Connected to RBmq server")
+print(" Connected to RBmq server")
 
 #create/ declare queue
 channel.queue_declare(queue='merra_plot_rx')
 
 def process_req(body):
     b64 = []
-    logger.info("type of body:",type(body))
+    # logger.info("type of body:",type(body))
     json_data = json.loads(body)
-    logger.info("Filename:",json_data['fileName'])
+    print("Filename:{}".format(json_data['fileName']))
+    print("Path exists:{}".format(json_data['fileName']))
     #logger.info(json_data)
     file_name = json_data['fileName']
+    print("Path exists:{}".format(file_name))
+
     #logger.info(file_name, " is downloaded")
     
 
-    logger.info('Downloading is done and find the downloaded files in your current working directory')
+    print('Downloading is done and find the downloaded files in your current working directory')
     #Read in NetCDF4 file (add a directory path if necessary):
     data = Dataset(file_name, mode='r')
 
@@ -88,7 +93,7 @@ channel.basic_qos(prefetch_count=1)
 # We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
 channel.basic_consume(queue='merra_plot_rx', on_message_callback=on_request)
 
-logger.info(" [x] Awaiting RPC requests")
+print(" [x] Awaiting RPC requests")
 channel.start_consuming()
 channel.close()
 
