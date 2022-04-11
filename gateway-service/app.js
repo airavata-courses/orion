@@ -217,9 +217,9 @@ wss.on("connection", (ws) => {
         resp.json({ correlationId: correlationId }).send();
         let stringData = JSON.stringify(req.body);
         console.log("This is how it's getting sent: ", stringData);
-        channelVar.sendToQueue("merra_ingestor_rx", Buffer.from(stringData), {
+        channelVar.sendToQueue("merra_plot_rx", Buffer.from(stringData), {
           correlationId,
-          replyTo: "merra_plot_rx",
+          replyTo: "merra_plot_tx",
         });
       }
     );

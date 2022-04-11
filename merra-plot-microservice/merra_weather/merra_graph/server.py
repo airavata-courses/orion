@@ -43,7 +43,7 @@ channel = connection.channel()
 logger.info(" Connected to RBmq server")
 
 #create/ declare queue
-channel.queue_declare(queue='merra_ingestor_rx')
+channel.queue_declare(queue='merra_plot_rx')
 
 ###################################################   RABBITMQ  CODE BEGINS    ###############################################################################
 
@@ -246,7 +246,7 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     #logger.info('\n HTTP_services output:')
     urls=constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLongitude, date)
     #logger.info(urls['link'])
-    print('I am  also here 1')  
+    # print('I am  also here 1')  
 
     URL = urls[0]['link'] 
     #logger.info('URL : {}'.format(URL))
@@ -261,22 +261,20 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     response['dataBody'] = DataBody"""
 
     response = {}
-    dirName='test'
-    path='../../'
-    if not os.path.isdir(dirName):
-        print('The directory is not present. Creating a new one..')
-        print('Current Working Directory:{} '.format(os.getcwd()))
-        os.chdir(path)
-        os.mkdir(dirName)
-        print('Current Working Directory after directory change :{} '.format( os.getcwd()))
+    # dirName='test'
+    # if not os.path.isdir(dirName):
+    #     print('The directory is not present. Creating a new one..')
+    #     # print('Current Working Directory:{} '.format(os.getcwd()))
+    #     os.mkdir(dirName)
+    #     print('Current Working Directory after directory change :{} '.format( os.getcwd()))
 
 
-    else:
-        print('The directory is present.')
+    # else:
+    #     print('The directory is present.')
     # Save file to working directory
     try:
         file_name = urls[0]['label']
-        file_ = open(dirName+'/'+file_name, 'wb')
+        file_ = open(file_name, 'wb')
         file_.write(DataBody)
         file_.close()
         print (file_name, " is downloaded")
@@ -286,7 +284,7 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     print('Downloading is done and find the downloaded files in your current working directory')
     # logger.info("response from download:",response['fileName'])
     # logger.info("type of response:",type(response))
-    response['fileName'] = path+dirName+'/'+file_name
+    response['fileName'] =file_name
     return response
 
 #unpack the data in message and process the message and return the output
@@ -310,19 +308,18 @@ def process_req(request):
 def plotsService(body):
     b64 = []
     # logger.info("type of body:",type(body))
-    json_data = json.loads(body)
-    print("Filename:{}".format(json_data['fileName']))
-    print("Path exists:{}".format(json_data['fileName']))
+    print("Filename:{}".format(body))
+    # print("Path exists:{}".format(body))
     #logger.info(json_data)
-    file_name = json_data['fileName']
-    print("Path exists:{}".format(file_name))
+    file_name = body
+    print("Path exists:{}",os.path.exists(file_name))
 
     #logger.info(file_name, " is downloaded")
     
 
     print('Downloading is done and find the downloaded files in your current working directory')
     #Read in NetCDF4 file (add a directory path if necessary):
-    data = Dataset(file_name, mode='r')
+    data = Dataset('MERRA2_400.inst3_3d_asm_Np.20180202.SUB.nc', mode='r')
 
     # Run the following line below to print MERRA-2 metadata. This line will print attribute and variable information. From the 'variables(dimensions)' list, choose which variable(s) to read in below.
     #logger.info(data)
@@ -372,7 +369,7 @@ def on_request(ch, method, props, body):
 
     response = process_req(body)
     print("Response:{} ".format(response['fileName']))
-    finalprocess=plotsService(response)
+    finalprocess=plotsService(response['fileName'])
 
     ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=json.dumps(finalprocess))
     ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -382,7 +379,7 @@ def on_request(ch, method, props, body):
 channel.basic_qos(prefetch_count=1)
                 
 # We declare a callback "on_request" for basic_consume, the core of the RPC server. It's executed when the request is received.
-channel.basic_consume(queue='merra_ingestor_rx', on_message_callback=on_request)
+channel.basic_consume(queue='merra_plot_rx', on_message_callback=on_request)
 
 print(" [x] Awaiting RPC requests")
 channel.start_consuming()
