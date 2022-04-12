@@ -1,0 +1,22 @@
+version: "3"
+services:
+  react-build: 
+    container_name: ui
+    image: anbadrin/orion-assignment1:ui
+    ports: 
+      - "3002:3002"
+  gateway-build:
+    container_name: gateway
+    image: anbadrin/orion-assignment1:gateway
+    ports:
+      - "4000:4000"
+  ingestor-build:
+    container_name: ingestor
+    image: anbadrin/orion-assignment1:ingestor
+    ports:
+      - "3001:3001"
+  plot-service-build:
+    container_name: plotter
+    image: anbadrin/orion-assignment1:plot
+    ports:
+      - "8000:8000"  

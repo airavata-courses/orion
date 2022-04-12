@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orion-ingestor
+  labels:
+    app: orion-ingestor
+spec:
+  selector:
+    matchLabels:
+      app: orion-ingestor
+  template:
+    metadata:
+      labels:
+        app: orion-ingestor
+    spec:
+      containers:
+      - name: orion-ingestor
+        image: anbadrin/orion-project3:ingestor
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orion-ingestor
+  labels:
+    app: orion-ingestor
+spec:
+  selector:
+    app: orion-ingestor
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orion-ui
+  labels:
+    app: orion-ui
+spec:
+  selector:
+    matchLabels:
+      app: orion-ui
+  template:
+    metadata:
+      labels:
+        app: orion-ui
+    spec:
+      containers:
+      - name: orion-ui
+        image: anbadrin/orion-project3:ui
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orion-ui
+  labels:
+    app: orion-ui
+spec:
+  selector:
+    app: orion-ui
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 3002
+      targetPort: 3002
+      nodePort: 30000

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orion-plot
+  labels:
+    app: orion-plot
+spec:
+  selector:
+    matchLabels:
+      app: orion-plot
+  template:
+    metadata:
+      labels:
+        app: orion-plot
+    spec:
+      containers:
+      - name: orion-plot
+        image: anbadrin/orion-project3:plot
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orion-plot
+  labels:
+    app: orion-plot
+spec:
+  selector:
+    app: orion-plot
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

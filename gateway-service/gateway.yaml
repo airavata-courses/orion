@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orion-gateway
+  labels:
+    app: orion-gateway
+spec:
+  selector:
+    matchLabels:
+      app: orion-gateway
+  template:
+    metadata:
+      labels:
+        app: orion-gateway
+    spec:
+      containers:
+      - name: orion-gateway
+        image: anbadrin/orion-project3:gateway
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orion-gateway
+  labels:
+    app: orion-gateway
+spec:
+  selector:
+    app: orion-gateway
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
+      nodePort: 30001
