@@ -62,13 +62,13 @@ def process_req(request):
     json_data = json.loads(request)
     print(json_data)
     #uri = json_data['uri']
-    for i in range(len(json_data)):
-        fname = json_data[i]
-        print(fname)
-        plt = createGraph(fname)
-        flike = io.BytesIO()
-        plt.savefig(flike)
-        b64.append(base64.b64encode(flike.getvalue()).decode())
+    #for i in range(len(json_data)):
+    fname = json_data[0]
+    print(fname)
+    plt = createGraph(fname)
+    flike = io.BytesIO()
+    plt.savefig(flike)
+    b64.append(base64.b64encode(flike.getvalue()).decode())
 
     """resp = {
         'id':json_data['entryId'],
@@ -96,7 +96,7 @@ def on_request(ch, method, props, body):
     # response = fib(12)
 
 
-    ch.basic_publish(exchange='', routing_key=props.reply_to, properties=pika.BasicProperties(correlation_id = props.correlation_id), body=str(response))
+    ch.basic_publish(exchange='', routing_key='plot_tx', properties=pika.BasicProperties(correlation_id = props.correlation_id), body=str(response))
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 # We might want to run more than one server process. 
