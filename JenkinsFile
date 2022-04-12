@@ -1,0 +1,71 @@
+pipeline{
+
+    agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+
+    stages{
+
+        stage('Checkout source'){
+            steps{
+                git branch: 'a3-release', 
+                url: 'https://github.com/airavata-courses/orion'
+            }
+        }
+
+        stage('Deploy kubernetes'){
+            steps{
+                sshagent(credentials:['kubernetes']){
+                    sh '''
+                        sudo apt-get install sshpass
+                        ssh -i ubuntu@149.165.155.203 << EOF
+                        cd orion/orion/
+                        whoami
+                        ./dockerHubPush.sh
+                        
+                        kubectl delete -f rabbitmq.yaml
+                        cd ui-service/
+                        kubectl delete -f  ui.yaml
+                        cd ..
+                        cd weather-data-ingestor-microservice/
+                        kubectl delete -f ingestor.yaml
+                        cd ..  
+                        cd gateway-service/
+                        kubectl delete -f gateway.yaml
+                        cd ..
+                        cd plot-weather-microservice/
+                        kubectl delete -f plot.yaml
+                        cd ..
+                        cd merra-plot-microservice/
+                        kubectl delete -f plot.yaml
+
+                        cd ..
+                        kubectl apply -f rabbitmq.yaml
+                        cd ui-service/
+                        kubectl apply -f  ui.yaml
+                        cd ..
+                        cd weather-data-ingestor-microservice/
+                        kubectl apply -f ingestor.yaml
+                        cd ..  
+                        cd gateway-service/
+                        kubectl apply -f gateway.yaml
+                        cd ..
+                        cd plot-weather-microservice/
+                        kubectl apply -f plot.yaml
+                        cd ..
+                        cd merra-plot-microservice/
+                        kubectl apply -f plot.yaml
+                        
+        
+                        exit
+                        EOF'''
+                }
+                echo "success deploy"
+            }
+
+        }
+
+    }
+
+}
