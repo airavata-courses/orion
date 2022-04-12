@@ -7,7 +7,7 @@ import { ToggleSwitch } from './ToggleSwitch'
 // post request to gateway/ingester
 async function sendData(data, format) {
     // return fetch('http://149.165.155.203:30001/nexrad', {
-    return fetch(`http://localhost:4000/${format ? 'nexRad' : 'merra'}`, {
+    return fetch(`http://149.165.155.203:30001/${format ? 'nexRad' : 'merra'}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -36,7 +36,7 @@ export default function HomePage(userData) {
 
     useEffect(() => {
         // const ws = new WebSocket("ws://149.165.155.203:30001");
-        const ws = new WebSocket("ws://localhost:4000");
+        const ws = new WebSocket("ws://149.165.155.203:30001");
         initWS(ws, setResponse)
     }, [])
 

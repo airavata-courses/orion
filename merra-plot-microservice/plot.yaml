@@ -1,36 +1,36 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: orion-plot
+  name: orion-merra-plot
   labels:
-    app: orion-plot
+    app: orion-merra-plot
 spec:
   selector:
     matchLabels:
-      app: orion-plot
+      app: orion-merra-plot
   template:
     metadata:
       labels:
-        app: orion-plot
+        app: orion-merra-plot
     spec:
       containers:
-      - name: orion-plot
-        image: anbadrin/orion-project3:plot
+      - name: orion-merra-plot
+        image: anbadrin/orion-project3:merra-plot
         imagePullPolicy: Always
         ports:
-        - containerPort: 8000
+        - containerPort: 8004
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: orion-plot
+  name: orion-merra-plot
   labels:
-    app: orion-plot
+    app: orion-merra-plot
 spec:
   selector:
-    app: orion-plot
+    app: orion-merra-plot
   type: NodePort
   ports:
     - protocol: TCP
-      port: 8000
-      targetPort: 8000
+      port: 8004
+      targetPort: 8004

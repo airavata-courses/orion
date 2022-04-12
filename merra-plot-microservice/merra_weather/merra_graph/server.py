@@ -39,7 +39,7 @@ url = 'https://disc.gsfc.nasa.gov/service/subset/jsonwsp'
  
 # establish connection with rabbitmq server 
 logger = logging.getLogger('django')
-connection = pika.BlockingConnection(pika.ConnectionParameters('orionRabbit'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('orion-rabbit'))
 channel = connection.channel()
 logger.info(" Connected to RBmq server")
 

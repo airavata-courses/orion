@@ -14,7 +14,7 @@ var BucketConfig = {
 var amqp = require('amqplib/callback_api');
 //connect to the rabitmq server
 
-amqp.connect('amqp://orionRabbit', function(error0, connection) {
+amqp.connect('amqp://orion-rabbit', function(error0, connection) {
   if (error0) {
     throw error0;
   }

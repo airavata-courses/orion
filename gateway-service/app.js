@@ -51,7 +51,7 @@ wss.on("connection", (ws) => {
     // ws.send(`Hello, you sent -> ${message}`);
   });
 
-  amqp.connect("amqp://orionRabbit", ampqConnectionInit);
+  amqp.connect("amqp://orion-rabbit", ampqConnectionInit);
 
   app.use(logger("dev"));
   app.use(express.json());
@@ -125,7 +125,7 @@ wss.on("connection", (ws) => {
     console.log("Received POST request at orionweather");
     console.log(req.body);
     if (!connectionVar) {
-      amqp.connect("amqp://orionRabbit", ampqConnectionHandler);
+      amqp.connect("amqp://orion-rabbit", ampqConnectionHandler);
     }
     if (!channelVar) {
       connectionVar.createChannel(ampqChannelHandler);
@@ -190,7 +190,7 @@ wss.on("connection", (ws) => {
     console.log("Received POST request for merra data");
     console.log(req.body);
     if (!connectionVar) {
-      amqp.connect("amqp://orionRabbit", ampqConnectionHandler);
+      amqp.connect("amqp://orion-rabbit", ampqConnectionHandler);
     }
     if (!channelVar) {
       connectionVar.createChannel(ampqChannelHandler);

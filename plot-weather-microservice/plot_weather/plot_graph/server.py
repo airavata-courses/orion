@@ -19,7 +19,7 @@ import logging
 logger = logging.getLogger('django')
 # from .views import PlotAPIView
  # establish connection with rabbitmq server 
-connection = pika.BlockingConnection(pika.ConnectionParameters('orionRabbit'))
+connection = pika.BlockingConnection(pika.ConnectionParameters('orion-rabbit'))
 channel = connection.channel()
 #print(" Connected to RBmq server")
 logger.info('Connected to the RBmq server')
