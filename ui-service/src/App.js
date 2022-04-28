@@ -7,7 +7,7 @@ function App() {
   return (
     <div className="App-header">
       <h1> Welcome to Weather Prediction DataHouse</h1>
-       <GoogleLoginComponent/>
+       <HomePage/>
     </div>
   );
 }
