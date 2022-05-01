@@ -1,5 +1,4 @@
 #!/bin/bash
-cd orion/orion/
 cd plot-weather-microservice/
 kubectl delete -f plot.yaml
 kubectl apply -f plot.yaml
