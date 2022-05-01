@@ -190,9 +190,8 @@ wss.on("connection", (ws) => {
           if(ws_connections.length>0) {
             console.log("These are the connections", ws_connections);
             var index = 0;
-            let msg_str = msg.content.toString();
-            msg_str[1]="\"";
-            msg_str[msg_str.length-2]="\"";
+            var msg_str = msg.content.toString();
+            msg_str = "[\""+msg_str.slice(2,msg_str.length-2)+"\"]";
             while(index<ws_connections.length) {
               if(ws_connections[index].readyState === WebSocket.OPEN) {
                 ws_connections[index].send(msg_str);//msg.content.toString());
