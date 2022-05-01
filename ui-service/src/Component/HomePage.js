@@ -36,7 +36,7 @@ export default function HomePage(userData) {
 
     useEffect(() => {
         // const ws = new WebSocket("ws://149.165.155.203:30001");
-        const ws = new WebSocket("ws://orion.raghunadham.com:30000");
+        const ws = new WebSocket("ws://orion.raghunadham.com:30001");
         initWS(ws, setResponse)
     }, [])
 
