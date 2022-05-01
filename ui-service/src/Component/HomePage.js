@@ -7,7 +7,7 @@ import { ToggleSwitch } from './ToggleSwitch'
 // post request to gateway/ingester
 async function sendData(data, format) {
     // return fetch('http://149.165.155.203:30001/nexrad', {
-    return fetch(`http://149.165.155.203:30001/${format ? 'nexRad' : 'merra'}`, {
+    return fetch(`http://orion.raghunadham.com:30001/${format ? 'nexRad' : 'merra'}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -36,7 +36,7 @@ export default function HomePage(userData) {
 
     useEffect(() => {
         // const ws = new WebSocket("ws://149.165.155.203:30001");
-        const ws = new WebSocket("ws://149.165.155.203:30001");
+        const ws = new WebSocket("ws://orion.raghunadham.com:30000");
         initWS(ws, setResponse)
     }, [])
 
