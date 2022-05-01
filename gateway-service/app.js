@@ -13,7 +13,7 @@ var channelVar;
 
 const http = require("http");
 const WebSocket = require("ws");
-const serverSocket = require("./socket.js");
+// const serverSocket = require("./socket.js");
 var app = express();
 
 const port = 4000;
@@ -43,14 +43,27 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 //const sendMessage = serverSocket.initWS(wss);
 
+const ws_connections = [];
 wss.on("connection", (ws) => {
   //connection is up, let's add a simple simple event
+  // var ws_connections = [];
+  ws_connections.push(ws);
+  // ws.on("open", () => {
+  //   console.log("Added a websocket to the list");
+  // //   ws_connections.push(ws);
+  // });
+
   ws.on("message", (message) => {
     //log the received message and send it back to the client
     console.log("received: %s", message);
-    // ws.send(`Hello, you sent -> ${message}`);
+    ws.send(`Hello, you sent -> ${message}`);
   });
 
+  ws.on("close", (event) => {
+    console.log("Removed a websocket to the list",  ws);
+  });
+
+});
   amqp.connect("amqp://orion-rabbit", ampqConnectionInit);
 
   app.use(logger("dev"));
@@ -174,7 +187,24 @@ wss.on("connection", (ws) => {
             msg.content.toString()
           );
 
-          ws.send(msg.content.toString());
+          if(ws_connections.length>0) {
+            console.log("These are the connections", ws_connections);
+            var index = 0;
+            let msg_str = msg.content.toString();
+            msg_str[1]="\"";
+            msg_str[msg_str.length-2]="\"";
+            while(index<ws_connections.length) {
+              if(ws_connections[index].readyState === WebSocket.OPEN) {
+                ws_connections[index].send(msg_str);//msg.content.toString());
+                console.log(msg_str,"Sent as msg");
+              } else {
+                console.log("Websocket State: [", index,"]", ws_connections[index].readyState);
+              }
+              index++;
+            }
+          } else {
+            console.log("no WS connections available");
+          }
         }
       },
       {
@@ -241,9 +271,22 @@ wss.on("connection", (ws) => {
           var returnData = {};
           returnData["dataMode"] = "MERRA";
           returnData["response"] = msg.content.toString();
-          // ws.send(msg.content.toString());
-          ws.send(msg.content.toString());
-          console.log(msg.content.toString(),"Sent as msg");
+
+          if(ws_connections.length>0) {
+            console.log("These are the connections", ws_connections);
+            var index = 0;
+            while(index<ws_connections.length) {
+              if(ws_connections[index].readyState === WebSocket.OPEN) {
+                ws_connections[index].send(msg.content.toString());
+                console.log(msg.content.toString(),"Sent as msg");
+              } else {
+                console.log("Websocket State: [", index,"]", ws_connections[index].readyState);
+              }
+              index++;
+            }
+          } else {
+            console.log("no WS connections available");
+          }
         }
       },
       {
@@ -252,7 +295,7 @@ wss.on("connection", (ws) => {
     );
     return;
   }
-});
+// });
 
 server.listen(port, () => console.log(`Listening on port ${port}`));
 module.exports = app;

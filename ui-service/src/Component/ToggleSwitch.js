@@ -16,7 +16,7 @@ export const ToggleSwitch = ({ format, setFormat }) => {
             <div className='ToggleSwitch__wrapper'>
                 
                 <div className={`Slider ${format && 'isChecked'}`} onClick={() => setFormat(!format)}>
-                    <div className={`ToggleSwitch__text ${format && 'isMoved'}`} id="source">NEXRAD</div>
+                    <div className={`ToggleSwitch__text ${format && 'isMoved'}`} id="source">MERRA</div>
                 </div>
                 
             </div>

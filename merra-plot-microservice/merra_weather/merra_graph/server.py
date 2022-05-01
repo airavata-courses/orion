@@ -92,10 +92,10 @@ def constructSubsetData(minLatitude,maxLatitude, minLongitude, maxLongitude, dat
 
     product = 'M2I3NPASM_V5.12.4' 
     varNames =['T']
-    minlat = int(minLatitude)
-    minlon = int(minLongitude)
-    maxlat = int(maxLatitude)
-    maxlon = int(maxLongitude)
+    minlat = float(minLatitude)
+    minlon = float(minLongitude)
+    maxlat = float(maxLatitude)
+    maxlon = float(maxLongitude)
     begTime = date
     endTime = date
     begHour = '00:00'
