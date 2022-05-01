@@ -278,6 +278,10 @@ def downloadMerraData(username,password,minLatitude,maxLatitude, minLongitude, m
     # print("File details: {}".format(urls))
     try:
         file_name = urls[0]['label']
+        if os.path.exists(file_name):
+            os.remove(file_name)
+        else:
+            print("The file does not exist")
         file_ = open(file_name, 'wb')
         file_.write(DataBody)
         file_.close()
