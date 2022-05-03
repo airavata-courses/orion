@@ -15,11 +15,19 @@ import custos.clients.utils.utilities as utl
 from google.protobuf.json_format import MessageToJson
 app = Flask(__name__)
 
-global orion
+# # read settings
+# custos_settings = CustosServerClientSettings(custos_host='custos.scigap.org',
+#                             custos_port='31499', 
+#                             custos_client_id='custos-rswfydl920pg7kuvmayc-10003419',
+#                             custos_client_sec='zGDFZJpx40E0OT5EIS6WL1PZK2hHtiOs2aYFyR1y')
+
+# # create custos user management client
+# user_management_client = UserManagementClient(custos_settings)
+# global orion
 class Orion:
-    def __init__(self):
-        try :
-        # read settings
+    # def __init__(self):
+    try :
+            # read settings
             custos_settings = CustosServerClientSettings(custos_host='custos.scigap.org',
                             custos_port='31499', 
                             custos_client_id='custos-rswfydl920pg7kuvmayc-10003419',
@@ -52,13 +60,20 @@ class Orion:
             resource_ids = []
             print("Successfully configured all custos clients")
             print(b64_encoded_custos_token)
-        except Exception as e:
+    except Exception as e:
             raise e
             print("Custos Id and Secret may wrong "+ str(e))
 
         
     def register_users(self, user):
         try:
+            # print("Inside Try block")
+            # print("Username:", user['username'])
+            # print("Firstname:", user['first_name'])
+            # print("LastName:", user['last_name'])
+            # print("password:", user['password'])
+            # print("email:", user['email'])
+
             self.user_management_client.register_user(token=self.b64_encoded_custos_token,
                                                 username=user['username'],
                                                 first_name=user['first_name'],
@@ -66,13 +81,27 @@ class Orion:
                                                 password=user['password'],
                                                 email=user['email'],
                                                 is_temp_password=False)
+
+            # self.user_management_client.register_user(self, self.b64_encoded_custos_token,
+            #                                     user['username'],
+            #                                     user['first_name'],
+            #                                     user['last_name'],
+            #                                     user['password'],
+            #                                     user['email'],
+            #                                     False)
+            print("I executed the first step in user_management_client ")
+
             self.user_management_client.enable_user(token=self.b64_encoded_custos_token, username=user['username'])
-            self.users.append(user['username'])
-            return 1
+            print("I executed the second step in user_management_client ")
+
+            ## The following two codes isnt there in isuru code 
+            # self.users.append(user['username'])
+            # return 1
         except Exception:
             print("User may already exist")
-            return 0
-    
+            # return 0
+    print("register_users method is defined")
+
     def create_group(self, group):
         try:
             print("Creating group: " + group['name'])
@@ -80,7 +109,7 @@ class Orion:
             grResponse = self.group_management_client.create_group(token=self.b64_encoded_custos_token,
                                                             name=group['name'],
                                                             description=group['description'],
-                                                            owner_id=group['owner_id'])
+                                                            owner_id=self.admin_user_name)
             resp = MessageToJson(grResponse)
             print(resp)
             respData = json.loads(resp)
@@ -95,7 +124,6 @@ class Orion:
             print(e)
             print("Group may be already created")
             return 0
-    
     def get_all_groups(self):
         try:
             groups = self.group_management_client.get_all_groups(self.b64_encoded_custos_token)
@@ -142,20 +170,55 @@ class Orion:
 
 @app.route('/register',methods = ['POST', 'GET'])
 def register_user():
-    print(request.json)
+    #This doesnt work 
+#     sample=[{
+#      "username": "hfgh",
+#     "first_name": "Ajhgg",
+#     "last_name": "Aron",
+#     "password": "12345678",
+#     "email": "kpy12@gmail.com"
+# }]
+
+    # This works
+    # sample={
+    #  "username": "hfgh",
+    # "first_name": "Ajhgg",
+    # "last_name": "Aron",
+    # "password": "12345678",
+    # "email": "kpy12@gmail.com"
+    # }
+
+    #This also works 
+    # sample={
+    #  'username': 'Ramya',
+    # 'first_name': 'Ajhgg',
+    # 'last_name': 'Aron',
+    # 'password': '12345678',
+    # 'email': 'raghdfgdgu@gmail.com'
+    # }
+
     try:  
-        global orion
+        # print("Sample data",sample)
         orion.register_users(request.json)
     except Exception:
         print("please defined method register_users")
 
+
+
+
+
+
 @app.route("/create_group")
 def create_groups(group):
+    group={
+        'name': 'Admin',
+        'description': 'Group for gateway read only admins',
+    },
     try:  
-        global orion
         orion.create_group(group)
-    except Exception:
-        print("please defined method register_users")
+    except Exception as e:
+        print(e)
+        print("please defined method create_groups")
 
 
 @app.route("/test")
