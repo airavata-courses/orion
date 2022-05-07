@@ -1,6 +1,6 @@
 ## Orion
 
-### Jenkins instance url
+### Jenkins instance urls
 
 Our jenkins instance is running at http://149.165.155.1:8080
 
