@@ -1,5 +1,7 @@
 ## Orion
 
+Read more about the project in our wiki
+
 ### Jenkins instance
 
 Our jenkins instance is running at http://orion-jenkins.raghunadham.com:8080
